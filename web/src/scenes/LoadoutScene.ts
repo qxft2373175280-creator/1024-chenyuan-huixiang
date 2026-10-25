@@ -1,5 +1,5 @@
 /**
- * 装备 / 卡牌（R2 主界面入口）
+ * 装备 / 卡牌
  *
  * 允许改：起始主手武器、开局预装卡牌（受该武器卡槽数限制）。
  * 改动写进存档 `loadout`，下一局开局生效（不改变已经开始的这一局）。
@@ -44,7 +44,7 @@ export class LoadoutScene extends Phaser.Scene {
     const weaponDef = getWeaponDef(loadout.primary);
     const maxCards = weaponDef.cardSlots;
 
-    // 武器列表
+  // 武器列表
     label(this, 120, 188, `主手武器（已解锁 ${unlockedWeapons.size} 把）`, 18, PALETTE[9], 0, 0.5);
     [...unlockedWeapons].forEach((weaponId, index) => {
       const def = getWeaponDef(weaponId);
@@ -61,7 +61,7 @@ export class LoadoutScene extends Phaser.Scene {
       handle.container.setDepth(DEPTH.HUD);
     });
 
-    // 卡牌列表（P2-2：未解锁的卡也列出来，明确显示锁定原因，避免玩家困惑）
+  // 卡牌列表（P2-2：未解锁的卡也列出来，明确显示锁定原因，避免玩家困惑）
     const lockedReason = getMenuGuide().loadout?.lockedReason ?? '未解锁：先去锻造台解锁';
     const allCardDefs = allCards();
     label(this, 120, 400, `开局预装卡牌（${loadout.cards.length} / ${maxCards} 张 ｜ 已解锁 ${unlockedCards.size} / ${allCardDefs.length} 张）`, 18, PALETTE[9], 0, 0.5);
@@ -94,7 +94,7 @@ export class LoadoutScene extends Phaser.Scene {
               this.flashInfo(`卡槽已满（${maxCards} 张）`);
               return;
             }
-            // 只借用 canInstall 的「类别适用 + 槽位 + 去重」规则，不真的建武器实例
+      // 只借用 canInstall 的「类别适用 + 槽位 + 去重」规则，不真的建武器实例
             const verdict = cardService.canInstall(
               { defId: loadout.primary, cardIds: [...loadout.cards] } as unknown as Parameters<typeof cardService.canInstall>[0],
               card.id,
@@ -149,7 +149,7 @@ export class LoadoutScene extends Phaser.Scene {
     this.infoText.setText(text).setColor(css(8));
   }
 
-  /** 验收脚本用 */
+ /** 测试脚本用 */
   debugLoadout(): Record<string, unknown> {
     const data = this.save.get();
     const loadout = readLoadout(data, getPlayerDef().startWeapons ?? []);

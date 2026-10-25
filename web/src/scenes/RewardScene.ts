@@ -1,5 +1,5 @@
 /**
- * 三选一 / 宝箱 / 商店（P4-S4）。
+ * 三选一 / 宝箱 / 商店。
  *
  * 由 GameScene 在 `scene.pause()` 之后 launch，选择完成 → resume + stop。
  * 键盘：1..4 直接选、← → 移动焦点、Enter 确认；商店可 Esc 离开。
@@ -19,7 +19,7 @@ import { label } from '../ui/Widgets';
 export interface RewardSceneData {
   offers: RewardOffer[];
   source: 'room' | 'chest' | 'shop';
-  /** 选择完成后要恢复的场景 key；省略 = Game（教程传 Tutorial） */
+ /** 选择完成后要恢复的场景 key；省略 = Game（教程传 Tutorial） */
   resumeScene?: string;
 }
 
@@ -131,11 +131,11 @@ export class RewardScene extends Phaser.Scene {
       this.picker.destroy();
       this.picker = null;
     }
-    // 恢复发起方场景（默认 Game；教程场景传 resumeScene = Tutorial）
+  // 恢复发起方场景（默认 Game；教程场景传 resumeScene = Tutorial）
     try {
       this.scene.resume(this.resumeScene);
     } catch {
-      /* 场景已不在运行，忽略 */
+   /* 场景已不在运行，忽略 */
     }
     this.scene.stop();
   }

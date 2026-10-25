@@ -1,5 +1,5 @@
 /**
- * 局内进度与统计（P4-S2）：金币、材料、击杀、计时、房间进度、结束快照。
+ * 局内进度与统计：金币、材料、击杀、计时、房间进度、结束快照。
  *
  * 契约实现：IRunService。所有数值变化都发 `run:stats`（变化才发，不轮询）。
  */
@@ -29,7 +29,7 @@ export class RunService implements IRunService {
   }
 
   start(totalRooms: number): void {
-    // 开局金币 = player.json 的 startGold + 锻造被动「行囊」的 startGold（BUG-006：原来只写死 0）
+  // 开局金币 = player.json 的 startGold + 锻造被动「行囊」的 startGold（006：原来只写死 0）
     const baseGold = getPlayerDef().startGold ?? DATA_FALLBACK.NO_BONUS;
     const passiveGold = tryGetService(this.scene, 'save')?.passiveBonuses().startGold ?? DATA_FALLBACK.NO_BONUS;
     this.goldValue = Math.max(0, baseGold + passiveGold);
@@ -133,7 +133,7 @@ export class RunService implements IRunService {
     log.p4.info('本局结束', snapshot);
   }
 
-  /** 变化才发；同时 150ms 节流，避免 Boss 战里每帧刷 HUD */
+ /** 变化才发；同时 150ms 节流，避免 Boss 战里每帧刷 HUD */
   private emitStats(): void {
     if (!this.statsDirty) return;
     const now = this.scene.time.now;

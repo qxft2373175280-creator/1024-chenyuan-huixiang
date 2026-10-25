@@ -17,13 +17,13 @@ function toCss(value: ColorLike): string {
 }
 
 export const UI_COLOR = {
-  // 数值色：给 rectangle / fillStyle 用
+ // 数值色：给 rectangle / fillStyle 用
   panel: hexToInt(PALETTE[1]),
   panelDeep: hexToInt(PALETTE[0]),
   border: hexToInt(PALETTE[3]),
   accent: hexToInt(PALETTE[9]),
   info: hexToInt(PALETTE[12]),
-  // 字符串色：给 text 的 color 用
+ // 字符串色：给 text 的 color 用
   text: hexColor(PALETTE[5]),
   dim: hexColor(PALETTE[4]),
   danger: hexColor(PALETTE[7]),

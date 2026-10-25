@@ -1,14 +1,14 @@
 /**
  * 类型化事件总线 —— payload 类型由 contracts.ts 的 EventMap 约束
- * 负责人：P1
+ * 
  *
  * 关停约定：
- *  - `offAll(context)` 只解绑该 context 注册的监听（场景 / HUD 的 SHUTDOWN 清理用）
- *  - `clear()` 才清空全局，仅用于整局重置 / 调试
+ * - `offAll(context)` 只解绑该 context 注册的监听（场景 / HUD 的 SHUTDOWN 清理用）
+ * - `clear()` 才清空全局，仅用于整局重置 / 调试
  *
  * 注意：Phaser 的 EventEmitter.removeAllListeners() 会清掉**所有人**的监听，
  * 早期 `offAll()` 直接调它，导致 HUD 一销毁就把 GameScene / 其他系统的订阅一起清空
- * （P3 验收时发现的 BUG-005）。这里改成按 context 记录后再精确解绑。
+ * （P3 测试时发现的 005）。这里改成按 context 记录后再精确解绑。
  */
 import Phaser from 'phaser';
 import type { EventMap, IEventBus } from './contracts';
@@ -35,7 +35,7 @@ export class TypedEventBus implements IEventBus {
   }
 
   once<K extends keyof EventMap>(key: K, fn: (payload: EventMap[K]) => void, ctx?: object): void {
-    // 包一层以便触发后同步维护注册表，避免 offAll 时重复解绑
+  // 包一层以便触发后同步维护注册表，避免 offAll 时重复解绑
     const wrapper = (payload: EventMap[K]): void => {
       this.removeRegistration(key as string, wrapper as AnyListener, ctx);
       fn.call(ctx, payload);
@@ -53,13 +53,13 @@ export class TypedEventBus implements IEventBus {
     this.emitter.emit(key as string, payload);
   }
 
-  /** 清空所有监听（仅用于整局重置 / 调试） */
+ /** 清空所有监听（仅用于整局重置 / 调试） */
   clear(): void {
     this.emitter.removeAllListeners();
     this.registrations.length = 0;
   }
 
-  /** 只解绑某个 context（场景 / HUD 实例）注册的监听 */
+ /** 只解绑某个 context（场景 / HUD 实例）注册的监听 */
   offAll(context?: object): void {
     if (context === undefined) {
       this.clear();
@@ -74,7 +74,7 @@ export class TypedEventBus implements IEventBus {
     }
   }
 
-  /** 当前注册数量（调试 / 泄漏自测用） */
+ /** 当前注册数量（调试 / 泄漏自测用） */
   listenerCount(): number {
     return this.registrations.length;
   }

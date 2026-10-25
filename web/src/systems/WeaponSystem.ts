@@ -33,7 +33,7 @@ const FALLBACK_EXECUTE_MULT = 2;
 const FALLBACK_CHAIN_RANGE_PX = 96;
 const FALLBACK_CHAIN_DAMAGE_MUL = 0.6;
 const FALLBACK_BURST_PERCENT_MAX_HP = 0.2;
-/** PARRY-01：近战挥砍命中标记 —— 唯一来源是 parry.json（禁止在此写死字面量） */
+/**：近战挥砍命中标记 —— 唯一来源是 parry.json（禁止在此写死字面量） */
 const PARRY_SWING_TAG = getParryConfig().weapons.meleeSwingTag;
 
 /**
@@ -84,7 +84,7 @@ export class WeaponSystem implements IWeaponService {
     this.recompute(inst);
     this.notifyState(inst);
     bus.emit('card:installed', { slot: this.slotOf(inst), cardId });
-    // 图鉴：装上即「已见过该卡」（BUG-004）
+  // 图鉴：装上即「已见过该卡」（004）
     tryGetService(this.scene, 'save')?.markSeen('card', cardId);
 
     const cardDef = getCardDef(cardId);
@@ -131,7 +131,7 @@ export class WeaponSystem implements IWeaponService {
     inst.stats = this.card.computeStats(inst);
   }
 
-  /** UpgradeSystem 复用：发武器状态事件 */
+ /** UpgradeSystem 复用：发武器状态事件 */
   notifyState(inst: WeaponInstance): void {
     const upgrade = getService(this.scene, 'upgrade');
     bus.emit('weapon:state', {
@@ -189,15 +189,15 @@ export class WeaponSystem implements IWeaponService {
       if (isThirdHit) spec.knockback = (spec.knockback ?? DATA_FALLBACK.WEAPON_KNOCKBACK) * THIRD_HIT_KNOCKBACK_MUL;
     }
 
-    // PARRY-01：近战挥砍的命中带 `melee_swing` + `weapon:<id>` 标记，
-    // 弹反系统靠它区分「挥砍命中」与「剑气/弹道命中」（同一 spec 会再用于剑气，故此处另建副本）
+  //：近战挥砍的命中带 `melee_swing` + `weapon:<id>` 标记，
+  // 弹反系统靠它区分「挥砍命中」与「剑气/弹道命中」（同一 spec 会再用于剑气，故此处另建副本）
     const swingSpec: DamageSpec = {
       ...spec,
       tags: [...(spec.tags ?? []), PARRY_SWING_TAG, `weapon:${def.id}`],
     };
     const hitCount = combat.meleeArc(origin, swingRad, rangePx, arcDeg, swingSpec);
 
-    // 魔焰剑：挥砍附带穿透剑气（def.projectile 存在时）
+  // 魔焰剑：挥砍附带穿透剑气（def.projectile 存在时）
     if (def.projectile) {
       this.fireProjectiles(def, stats, spec, origin, aimRad);
     }
@@ -207,8 +207,8 @@ export class WeaponSystem implements IWeaponService {
       inst.comboExpireAt = 0;
     } else {
       inst.comboIndex = (inst.comboIndex + 1) % Math.max(1, comboHits);
-      // 连击窗口从「下一次可攻击时刻」起算，而不是从本次攻击时刻起算：
-      // 铁剑 1.0 次/秒（1000ms）> 620ms，若从本次攻击起算，三段连击永远进不到第 2 段。
+   // 连击窗口从「下一次可攻击时刻」起算，而不是从本次攻击时刻起算：
+   // 铁剑 1.0 次/秒（1000ms）> 620ms，若从本次攻击起算，三段连击永远进不到第 2 段。
       inst.comboExpireAt = inst.nextAttackAt + def.comboWindowMs;
     }
 
@@ -241,8 +241,8 @@ export class WeaponSystem implements IWeaponService {
     const combat = getService(this.scene, 'combat');
     const count = Math.max(1, Math.round(stats.projectileCount));
     const spreadRad = (stats.spreadDeg * Math.PI) / 180;
-    // 长刃（range ×）对剑气同步生效：PlayerProjectileCfg 没有距离字段，
-    // 用「有效距离 / 基础距离」等比放大存活时长，速度不变 → 射程变长。
+  // 长刃（range ×）对剑气同步生效：PlayerProjectileCfg 没有距离字段，
+  // 用「有效距离 / 基础距离」等比放大存活时长，速度不变 → 射程变长。
     const rangeScale = def.category === 'melee' && def.range > 0
       ? stats.rangeTiles / def.range
       : 1;
@@ -264,7 +264,7 @@ export class WeaponSystem implements IWeaponService {
     }
   }
 
-  /** §7.3.3 模板：P3 只决定性，暴击/处决/连锁/吸血/爆炸由 P2 结算 */
+ /** §7.3.3 模板：P3 只决定性，暴击/处决/连锁/吸血/爆炸由 P2 结算 */
   private buildSpec(stats: WeaponStats, def: WeaponDef, params: Record<string, number>): DamageSpec {
     const spec: DamageSpec = {
       amount: stats.damage,
@@ -319,7 +319,7 @@ export class WeaponSystem implements IWeaponService {
     return 'physical';
   }
 
-  /** create 首次填充用，随后立即被 CardSystem.computeStats 覆盖 */
+ /** create 首次填充用，随后立即被 CardSystem.computeStats 覆盖 */
   private baseStats(def: WeaponDef): WeaponStats {
     return {
       damage: def.baseDamage,

@@ -1,6 +1,6 @@
 /**
  * 局外锻造台：武器 / 卡牌 / 敌人图鉴 + 蓝图解锁
- * 负责人：P1
+ * 
  *
  * 实现说明：切换页签 / 购买后统一用 scene.restart({ tab }) 重建，
  * 避免手工追踪并销毁上百个 GameObject（P1 阶段的稳妥做法）。
@@ -51,7 +51,7 @@ export class ForgeScene extends Phaser.Scene {
 
   create(): void {
     this.save = getService(this, 'save');
-    // 调试入口：?scene=forge&tab=cards 直接看对应页签
+  // 调试入口：?scene=forge&tab=cards 直接看对应页签
     const urlTab = getUrlParam('tab');
     if (urlTab && TABS.some((item) => item.key === urlTab)) {
       this.tab = urlTab as Tab;
@@ -96,7 +96,7 @@ export class ForgeScene extends Phaser.Scene {
     this.scene.restart({ tab });
   }
 
-  /* ---------------- 武器图鉴 ---------------- */
+ /* ---------------- 武器图鉴 ---------------- */
 
   private renderWeapons(): void {
     const weapons = allWeapons();
@@ -164,7 +164,7 @@ export class ForgeScene extends Phaser.Scene {
     });
   }
 
-  /* ---------------- 卡牌图鉴 ---------------- */
+ /* ---------------- 卡牌图鉴 ---------------- */
 
   private renderCards(): void {
     const cards = allCards();
@@ -223,7 +223,7 @@ export class ForgeScene extends Phaser.Scene {
     );
   }
 
-  /* ---------------- 敌人图鉴 ---------------- */
+ /* ---------------- 敌人图鉴 ---------------- */
 
   private renderEnemies(): void {
     const enemies = allEnemies();
@@ -275,7 +275,7 @@ export class ForgeScene extends Phaser.Scene {
     });
   }
 
-  /* ---------------- 蓝图解锁 ---------------- */
+ /* ---------------- 蓝图解锁 ---------------- */
 
   private renderUnlocks(): void {
     const unlocks = allUnlocks();

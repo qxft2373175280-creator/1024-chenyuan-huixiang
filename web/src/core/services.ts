@@ -1,10 +1,10 @@
 /**
  * 服务注册表 —— 基于 Phaser 的 game.registry（跨场景可取）
- * 负责人：P1
+ * 
  *
  * 用法：
- *   setService(scene, 'combat', impl)          // 由拥有方在 install*() 里注册
- *   const combat = getService(scene, 'combat') // 任何人按 key 取用
+ *  setService(scene, 'combat', impl)     // 由拥有方在 install*() 里注册
+ *  const combat = getService(scene, 'combat') // 任何人按 key 取用
  */
 import type Phaser from 'phaser';
 import type { ServiceKey, ServiceMap } from './contracts';

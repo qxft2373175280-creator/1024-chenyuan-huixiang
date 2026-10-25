@@ -1,6 +1,6 @@
 /**
  * 贴图预览页（?debug=assets）—— 给美术/开发一眼看全所有 key
- * 负责人：P1
+ * 
  */
 import Phaser from 'phaser';
 import { DEPTH, GAME_HEIGHT, GAME_WIDTH } from '../core/constants';

@@ -1,35 +1,35 @@
 /**
- * 存档扩展字段（R2/R3，契约外增量）
+ * 存档扩展字段
  *
  * `contracts.ts` 冻结，这里用 module augmentation 给 `SaveData` 增加**可选**字段：
- *  - 槽位 / 时间戳（三存档槽展示用）
- *  - 关卡进度（R4）
- *  - 出战配置（装备/卡牌，R2 的「装备卡牌」入口）
- *  - 主界面指引是否看过（R2）
+ * - 槽位 / 时间戳（三存档槽展示用）
+ * - 关卡进度
+ * - 出战配置（装备/卡牌， 的「装备卡牌」入口）
+ * - 主界面指引是否看过
  *
  * 旧存档没有这些字段时，读取处全部按默认值处理（见 `systems/SaveSlotStore.ts` 的 `sanitizeProfile`）。
  */
 import type { SaveData } from './contracts';
 
-/** 关卡进度（R4：关卡循环 + 难度递增） */
+/** 关卡进度 */
 export interface StageProgress {
-  /** 当前要挑战的关卡（1 基） */
+ /** 当前要挑战的关卡（1 基） */
   currentStage: number;
-  /** 已经通关过的最高关卡 */
+ /** 已经通关过的最高关卡 */
   highestStage: number;
-  /** 每关通关次数（历史回放用；键是关卡号） */
+ /** 每关通关次数（历史回放用；键是关卡号） */
   clears: Record<string, number>;
-  /** 失败次数 */
+ /** 失败次数 */
   losses: number;
-  /** 已通关的挑战层层数（0 = 还没打过挑战模式） */
+ /** 已通关的挑战层层数（0 = 还没打过挑战模式） */
   challengeLevel: number;
 }
 
 /** 出战配置（主界面「装备/卡牌」） */
 export interface LoadoutState {
-  /** 起始主手武器 id */
+ /** 起始主手武器 id */
   primary: string;
-  /** 开局预装的卡牌 id（受卡槽数限制） */
+ /** 开局预装的卡牌 id（受卡槽数限制） */
   cards: string[];
 }
 
@@ -50,13 +50,13 @@ export interface SlotMeta {
 
 declare module './contracts' {
   interface SaveData {
-    /** 0..2；未选择槽位（调试/旧流程）时可能缺省 */
+  /** 0..2；未选择槽位（调试/旧流程）时可能缺省 */
     slot?: number;
     createdAt?: number;
     lastPlayedAt?: number;
     progress?: StageProgress;
     loadout?: LoadoutState;
-    /** 主界面功能指引是否已经看过 */
+  /** 主界面功能指引是否已经看过 */
     guideSeen?: boolean;
   }
 }

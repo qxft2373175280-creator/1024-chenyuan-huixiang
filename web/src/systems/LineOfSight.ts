@@ -1,5 +1,5 @@
 /**
- * 视线（LOS）与房间墙体登记（COMBAT-01）。
+ * 视线（LOS）与房间墙体登记()。
  *
  * 目的：怪物不能隔墙输出，也不能隔墙起手。不做寻路，只做「两点之间有没有墙」的轻量采样。
  * 数据来源：RoomSystem 建好的墙体 StaticGroup，由 GameScene 在进房时登记到 registry，
@@ -41,7 +41,7 @@ export function hasWallBetween(scene: Phaser.Scene, from: Vec2, to: Vec2): boole
     const t = i / steps;
     const x = from.x + dx * t;
     const y = from.y + dy * t;
-    // includeDynamic=false / includeStatic=true：只关心墙，玩家与怪物不参与遮挡
+  // includeDynamic=false / includeStatic=true：只关心墙，玩家与怪物不参与遮挡
     const bodies = scene.physics.overlapRect(x - 1, y - 1, 2, 2, false, true);
     if (bodies.length > 0) return true;
   }

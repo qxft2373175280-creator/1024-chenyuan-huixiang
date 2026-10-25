@@ -1,6 +1,6 @@
 /**
  * 可播种随机数（mulberry32 —— 纯函数、无依赖、可复现）
- * 负责人：P1
+ * 
  */
 import type { Rng } from './contracts';
 

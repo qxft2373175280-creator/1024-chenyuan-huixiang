@@ -1,6 +1,6 @@
 /**
  * 局外 UI 小工具（按钮 / 面板 / 提示 / 背景）
- * 负责人：P1（P4 的 src/ui/* 是战斗内 HUD，两者互不影响）
+ * （src/ui/* 是战斗内 HUD，两者互不影响）
  */
 import Phaser from 'phaser';
 import { DEPTH, FONT_FAMILY, GAME_HEIGHT, GAME_WIDTH } from '../core/constants';
@@ -100,9 +100,9 @@ export function createButton(
 
   container.add([graphics, text]);
   container.setSize(width, height);
-  // 注意：Container 的命中区域要用 (0,0,width,height)。
-  // Phaser 在 pointWithinHitArea 里会先把局部坐标 +displayOrigin（=width/2,height/2），
-  // 若这里写成 (-width/2,-height/2,width,height)，实际可点范围只剩左半边（P1 验收发现的 bug）。
+ // 注意：Container 的命中区域要用 (0,0,width,height)。
+ // Phaser 在 pointWithinHitArea 里会先把局部坐标 +displayOrigin（=width/2,height/2），
+ // 若这里写成 (-width/2,-height/2,width,height)，实际可点范围只剩左半边（P1 调试发现的 bug）。
   container.setInteractive(new Phaser.Geom.Rectangle(0, 0, width, height), Phaser.Geom.Rectangle.Contains);
   if (container.input) container.input.cursor = 'pointer';
 
@@ -119,7 +119,7 @@ export function createButton(
     try {
       getService(scene, 'audio').play('sfx_ui_click');
     } catch {
-      // 场景尚未注册音频服务时静默（例如调试页）
+   // 场景尚未注册音频服务时静默（例如调试页）
     }
     onClick();
   });

@@ -12,18 +12,7 @@
     "data:validate": "node scripts/validate-data.mjs",
     "assets:check": "node scripts/check-assets.mjs",
     "art:build": "node scripts/art/build-art.mjs",
-    "pack:itch": "node scripts/pack-itch.mjs",
-    "deploy:itch": "node scripts/deploy-itch.mjs",
-    "acc:tutorial": "node scripts/acceptance/acc-tutorial.mjs",
-    "acc:blueprint": "node scripts/acceptance/acc-blueprint.mjs",
-    "acc:parry": "node scripts/acceptance/acc-parry.mjs",
-    "acc:parry-room": "node scripts/acceptance/acc-parry-room.mjs",
-    "acc:e2e": "node scripts/acceptance/acc-e2e.mjs",
-    "acc:saveio": "node scripts/acceptance/acc-saveio.mjs",
-    "acc:challenge": "node scripts/acceptance/acc-challenge.mjs",
-    "acc:layout": "node scripts/acceptance/acc-layout.mjs",
-    "format": "prettier --write \"src/**/*.{ts,json}\"",
-    "acc:combat": "node scripts/acceptance/acc-combat.mjs"
+    "format": "prettier --write \"src/**/*.{ts,json}\""
   },
   "dependencies": {
     "phaser": "^3.90.0"

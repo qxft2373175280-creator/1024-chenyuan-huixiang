@@ -1,11 +1,11 @@
 /**
- * 三存档槽存储层（R2/R3）
+ * 三存档槽存储层
  *
  * 职责：
- *  - 三个槽位独立存储（`aaa1024.save.slot1..3`），互不污染；
- *  - 列出槽位摘要（主界面/继续游戏要显示「第几关 / 材料 / 最后游玩」）；
- *  - 导出 JSON / 导入前校验（版本、字段、数值范围、武器/卡牌 id 必须真实存在）；
- *  - 旧版单存档（`aaa1024_save_v1`）首次启动时迁移到槽位 1。
+ * - 三个槽位独立存储（`aaa1024.save.slot1..3`），互不污染；
+ * - 列出槽位摘要（主界面/继续游戏要显示「第几关 / 材料 / 最后游玩」）；
+ * - 导出 JSON / 导入前校验（版本、字段、数值范围、武器/卡牌 id 必须真实存在）；
+ * - 旧版单存档（`aaa1024_save_v1`）首次启动时迁移到槽位 1。
  *
  * 注意：本文件只管「存储与校验」，不持有运行时状态；当前激活存档由 `SaveSystem.adoptSlot()` 管理。
  */
@@ -72,7 +72,7 @@ export function clearSlot(slotIndex: number): void {
   try {
     window.localStorage.removeItem(slotStorageKey(slotIndex));
   } catch {
-    /* ignore */
+  /* ignore */
   }
 }
 

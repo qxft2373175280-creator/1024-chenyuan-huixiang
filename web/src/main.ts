@@ -1,6 +1,6 @@
 /**
  * 入口：Phaser 配置 + 全局服务注册 + 首屏 loading 收尾 + 全局错误兜底
- * 负责人：P1
+ * 
  */
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from './core/constants';
@@ -59,7 +59,7 @@ const config: Phaser.Types.Core.GameConfig = {
 const game = new Phaser.Game(config);
 
 // ---------- 开发期调试钩子（DEV 才有，生产构建不带） ----------
-// 验收/联调脚本用：window.__game.scene.getScene('Game') + import('/src/core/services.ts')
+// 调试脚本用：window.__game.scene.getScene('Game') + import('/src/core/services.ts')
 if (import.meta.env.DEV) {
   (window as unknown as { __game?: Phaser.Game }).__game = game;
 }
@@ -76,7 +76,7 @@ function hideDomBootOverlay(): void {
   const overlay = document.getElementById('boot-overlay');
   if (!overlay) return;
   overlay.classList.add('is-hidden');
-  // 仅用于 DOM 首屏淡出（不是游戏内计时器）
+ // 仅用于 DOM 首屏淡出（不是游戏内计时器）
   window.setTimeout(() => overlay.remove(), 420);
 }
 

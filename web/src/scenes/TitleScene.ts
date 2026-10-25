@@ -1,9 +1,9 @@
 /**
- * 启动页 / 标题画面（R2）
+ * 启动页 / 标题画面
  *
  * 流程：启动 → 标题画面 → [新游戏] / [继续游戏]
- *  - 新游戏 → 槽位选择（只能选空槽）→ 建号 → 直接进教程 → 第一关
- *  - 继续游戏 → 槽位选择（选已有存档）→ 主界面
+ * - 新游戏 → 槽位选择（只能选空槽）→ 建号 → 直接进教程 → 第一关
+ * - 继续游戏 → 槽位选择（选已有存档）→ 主界面
  */
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../core/constants';
@@ -20,7 +20,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   create(): void {
-    // 旧版单存档首次启动时迁移到槽位 1（只做一次）
+  // 旧版单存档首次启动时迁移到槽位 1（只做一次）
     const migration = migrateLegacySave();
     if (migration.migrated) {
       log.p1.info('旧存档已迁移', { slot: migration.slot });

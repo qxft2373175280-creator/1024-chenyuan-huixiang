@@ -1,8 +1,8 @@
 /**
  * 契约层 v1 —— 全项目唯一的接口定义（冻结）
  *
- * 负责人：P1（只有 P1 能改本文件；其他部分只读引用）
- * 修改规则：见《方案文档.md》§3.6；破坏性改动静止，先走 RFC 并升级 CONTRACTS_VERSION。
+ * （只有 P1 能改本文件；其他部分只读引用）
+ * 修改规则：见《设计文档》§3.6；破坏性改动静止，先走 RFC 并升级 CONTRACTS_VERSION。
  * 兼容要求：本文件不含运行时依赖（只允许 import type），可被 `tsc --noEmit` 单独校验。
  */
 import type { BgmKey, SfxKey } from './keys';
@@ -39,17 +39,17 @@ export type Rng = () => number;
 /* ---------- 武器 weapons.json ---------- */
 
 export interface ProjectileDef {
-  /** 速度 px/s */
+ /** 速度 px/s */
   speed: number;
-  /** 存活时长 ms */
+ /** 存活时长 ms */
   lifeMs: number;
-  /** 命中半径 px */
+ /** 命中半径 px */
   radiusPx: number;
-  /** 额外穿透目标数 */
+ /** 额外穿透目标数 */
   pierce: number;
-  /** 相邻弹道夹角（度） */
+ /** 相邻弹道夹角（度） */
   spreadDeg: number;
-  /** 单次发射弹丸数 */
+ /** 单次发射弹丸数 */
   count: number;
 }
 
@@ -57,38 +57,38 @@ export interface WeaponDef {
   id: string;
   name: string;
   category: WeaponCategory;
-  /** 贴图 key，规则：spr_weapon_<id> */
+ /** 贴图 key，规则：spr_weapon_<id> */
   textureKey: string;
   baseDamage: number;
-  /** 次/秒 */
+ /** 次/秒 */
   attackSpeed: number;
-  /** 有效距离，单位：瓦片 */
+ /** 有效距离，单位：瓦片 */
   range: number;
-  /** 连击段数（远程恒为 1） */
+ /** 连击段数（远程恒为 1） */
   comboHits: number;
-  /** 连击窗口 ms */
+ /** 连击窗口 ms */
   comboWindowMs: number;
-  /** 近战扇形角度 */
+ /** 近战扇形角度 */
   arcDeg?: number;
-  /** 远程 / 元素武器的弹道参数 */
+ /** 远程 / 元素武器的弹道参数 */
   projectile?: ProjectileDef;
   cardSlots: number;
-  /** 基础暴击率 0..1 */
+ /** 基础暴击率 0..1 */
   critChance: number;
-  /** 基础暴击倍率 */
+ /** 基础暴击倍率 */
   critMult: number;
-  /** 升级所需经验：[Lv1→2, Lv2→3] */
+ /** 升级所需经验：[Lv1→2, Lv2→3] */
   expToLevel: [number, number];
-  /** Lv3 后进化所需额外经验；进化态为 0 */
+ /** Lv3 后进化所需额外经验；进化态为 0 */
   expToEvolve: number;
-  /** 进化目标；进化态省略 */
+ /** 进化目标；进化态省略 */
   evolvesTo?: string;
   tags: string[];
   description: string;
 }
 
 export interface WeaponsFileDef {
-  /** 武器等级成长曲线，[Lv1, Lv2, Lv3] */
+ /** 武器等级成长曲线，[Lv1, Lv2, Lv3] */
   levelScaling: { damageMul: number[]; attackSpeedMul: number[] };
   weapons: WeaponDef[];
 }
@@ -119,9 +119,9 @@ export interface CardModifier {
   target: ModifierTarget;
   op: ModifierOp;
   value: number;
-  /** 限定武器类别；省略 = 所有武器生效 */
+ /** 限定武器类别；省略 = 所有武器生效 */
   weaponCategories?: WeaponCategory[];
-  /** 条件触发概率 0..1；省略 = 必定生效 */
+ /** 条件触发概率 0..1；省略 = 必定生效 */
   chance?: number;
 }
 
@@ -130,22 +130,22 @@ export interface CardDef {
   name: string;
   type: CardType;
   rarity: Rarity;
-  /** 贴图 key，规则：ui_<cardId> */
+ /** 贴图 key，规则：ui_<cardId> */
   textureKey: string;
-  /** 支持 {value} 占位符，由 CardSystem.describe() 填充 */
+ /** 支持 {value} 占位符，由 CardSystem.describe() 填充 */
   description: string;
-  /** 流派标签：poison / barrage / crit / execute / spin / reach / sustain / elemental */
+ /** 流派标签：poison / barrage / crit / execute / spin / reach / sustain / elemental */
   tags: string[];
   modifiers: CardModifier[];
-  /** 行为开关，语义见《方案文档.md》§9.2 */
+ /** 行为开关，语义见《设计文档》§9.2 */
   flags?: string[];
-  /** 数据驱动的额外数值（触发半径、百分比等），禁止写死在代码里 */
+ /** 数据驱动的额外数值（触发半径、百分比等），禁止写死在代码里 */
   params?: Record<string, number>;
-  /** 抽卡权重 */
+ /** 抽卡权重 */
   weight: number;
-  /** 是否允许重复获得 */
+ /** 是否允许重复获得 */
   stackable: boolean;
-  /** 需要锻造解锁的 unlock id；省略 = 默认解锁 */
+ /** 需要锻造解锁的 unlock id；省略 = 默认解锁 */
   unlock?: string;
 }
 
@@ -158,18 +158,18 @@ export interface CardsFileDef {
 export interface EnemyAttackDef {
   damage: number;
   cooldownMs: number;
-  /** 射程 / 触发距离 px */
+ /** 射程 / 触发距离 px */
   rangePx: number;
-  /** 前摇 ms（给玩家反应时间） */
+ /** 前摇 ms（给玩家反应时间） */
   windupMs: number;
-  /** 有值 = 远程攻击 */
+ /** 有值 = 远程攻击 */
   projectileSpeed?: number;
-  /** 有值 = 范围攻击 */
+ /** 有值 = 范围攻击 */
   aoeRadiusPx?: number;
 }
 
 export interface BossPhaseDef {
-  /** 进入该阶段的血量比例阈值（含） */
+ /** 进入该阶段的血量比例阈值（含） */
   atHpRatio: number;
   speedMul?: number;
   damageMul?: number;
@@ -177,7 +177,7 @@ export interface BossPhaseDef {
   attacks: ('charge' | 'radial' | 'summon' | 'slam')[];
   summon?: { enemyId: string; count: number };
   radial?: { count: number; speed: number; damage: number };
-  /** 屏幕播报文案 */
+ /** 屏幕播报文案 */
   announce?: string;
 }
 
@@ -185,21 +185,21 @@ export interface EnemyDef {
   id: string;
   name: string;
   ai: EnemyAiType;
-  /** 贴图 key，规则：spr_<enemyId> */
+ /** 贴图 key，规则：spr_<enemyId> */
   textureKey: string;
   maxHp: number;
-  /** px/s */
+ /** px/s */
   speed: number;
   radiusPx: number;
   contactDamage: number;
   contactCooldownMs: number;
   attack?: EnemyAttackDef;
-  /** 击杀给武器的经验 */
+ /** 击杀给武器的经验 */
   exp: number;
   gold: number;
-  /** 掉落锻造材料的概率 0..1 */
+ /** 掉落锻造材料的概率 0..1 */
   materialChance: number;
-  /** 0..1，1 = 免疫击退 */
+ /** 0..1，1 = 免疫击退 */
   knockbackResist: number;
   elite?: boolean;
   isBoss?: boolean;
@@ -216,7 +216,7 @@ export interface PlayerDef {
   id: string;
   name: string;
   maxHp: number;
-  /** px/s */
+ /** px/s */
   moveSpeed: number;
   dashSpeed: number;
   dashDurationMs: number;
@@ -225,7 +225,7 @@ export interface PlayerDef {
   hurtIFrameMs: number;
   pickupRadius: number;
   startGold: number;
-  /** 初始主 / 副武器 id */
+ /** 初始主 / 副武器 id */
   startWeapons: string[];
 }
 
@@ -237,16 +237,16 @@ export type TileSymbol = '#' | '.' | 'P' | 'S' | 'C' | '$' | 'B' | 'G';
 export interface LayoutDef {
   id: string;
   name: string;
-  /** 必须 40 */
+ /** 必须 40 */
   width: number;
-  /** 必须 24 */
+ /** 必须 24 */
   height: number;
-  /** 24 行 × 40 字符 */
+ /** 24 行 × 40 字符 */
   pattern: string[];
 }
 
 export interface WaveDef {
-  /** 上一波清空后的等待 ms */
+ /** 上一波清空后的等待 ms */
   delayMs: number;
   enemies: { enemyId: string; count: number }[];
 }
@@ -255,9 +255,9 @@ export interface RoomDef {
   id: string;
   type: RoomType;
   layoutId: string;
-  /** shop / treasure 房可为空数组 */
+ /** shop / treasure 房可为空数组 */
   waves: WaveDef[];
-  /** 清房三选一数量 */
+ /** 清房三选一数量 */
   rewardCount: number;
   chestCount: number;
 }
@@ -279,7 +279,7 @@ export interface EconomyDef {
 }
 
 export interface RunMapDef {
-  /** 线性关卡序列 */
+ /** 线性关卡序列 */
   nodes: { roomId: string }[];
 }
 
@@ -296,14 +296,14 @@ export interface ForgeUnlockDef {
   id: string;
   name: string;
   kind: 'card' | 'weapon' | 'passive';
-  /** card id / weapon id / passive id */
+ /** card id / weapon id / passive id */
   target: string;
-  /** 锻造材料 */
+ /** 锻造材料 */
   cost: number;
-  /** 前置 unlock id */
+ /** 前置 unlock id */
   requires: string[];
   description: string;
-  /** 仅 kind === 'passive' 使用 */
+ /** 仅 kind === 'passive' 使用 */
   effects?: {
     maxHp?: number;
     damagePct?: number;
@@ -328,16 +328,16 @@ export interface WeaponStats {
   projectileCount: number;
   pierce: number;
   spreadDeg: number;
-  /** 0..1 */
+ /** 0..1 */
   critChance: number;
   critMult: number;
-  /** 0..1，0 = 无 */
+ /** 0..1，0 = 无 */
   executeBelow: number;
   poisonPerHit: number;
   poisonDurationMs: number;
-  /** 0..1 */
+ /** 0..1 */
   lifesteal: number;
-  /** 连锁目标数 */
+ /** 连锁目标数 */
   chain: number;
   explodeRadiusPx: number;
   spinRadiusPx: number;
@@ -348,18 +348,18 @@ export interface WeaponStats {
 export interface WeaponInstance {
   uid: string;
   defId: string;
-  /** 1..3 */
+ /** 1..3 */
   level: number;
   exp: number;
-  /** 已装卡牌，长度 ≤ cardSlots */
+ /** 已装卡牌，长度 ≤ cardSlots */
   cardIds: string[];
   evolved: boolean;
   stats: WeaponStats;
-  /** P3 内部：下次可攻击时间戳 */
+ /** P3 内部：下次可攻击时间戳 */
   nextAttackAt: number;
-  /** P3 内部：当前连击段索引 */
+ /** P3 内部：当前连击段索引 */
   comboIndex: number;
-  /** P3 内部：连击窗口截止时间戳 */
+ /** P3 内部：连击窗口截止时间戳 */
   comboExpireAt: number;
 }
 
@@ -368,12 +368,12 @@ export interface WeaponExpResult {
   evolved: boolean;
   level: number;
   exp: number;
-  /** 下一级所需经验；满级且不可进化时为 0 */
+ /** 下一级所需经验；满级且不可进化时为 0 */
   next: number;
 }
 
 export interface StatusEffect {
-  /** 只有 poison 会走 DoT，其余为纯伤害元素 */
+ /** 只有 poison 会走 DoT，其余为纯伤害元素 */
   element: ElementType;
   dps: number;
   durationMs: number;
@@ -381,7 +381,7 @@ export interface StatusEffect {
 }
 
 /**
- * 一次伤害请求：由 P3（武器 / 卡牌）填数值，由 P2 的 CombatSystem 统一结算。
+ * 一次伤害请求：由 P3（武器 / 卡牌）填数值，由 CombatSystem 统一结算。
  * P3 只决定性，不定结果；暴击 / 处决 / 连锁 / 吸血 / 死亡爆炸都在 CombatSystem 里执行。
  */
 export interface DamageSpec {
@@ -389,23 +389,23 @@ export interface DamageSpec {
   element: ElementType;
   critChance?: number;
   critMult?: number;
-  /** px/s 冲量 */
+ /** px/s 冲量 */
   knockback?: number;
-  /** 传给统计 / 特效 */
+ /** 传给统计 / 特效 */
   tags?: string[];
   status?: StatusEffect;
-  /** 血量比例阈值 */
+ /** 血量比例阈值 */
   executeBelow?: number;
-  /** 满足阈值时的伤害倍率 */
+ /** 满足阈值时的伤害倍率 */
   executeMult?: number;
-  /** 0..1，命中后回血（CombatSystem 发 combat:lifesteal） */
+ /** 0..1，命中后回血（CombatSystem 发 combat:lifesteal） */
   lifesteal?: number;
   chain?: { count: number; rangePx: number; damageMul: number };
   deathBurst?: {
     radiusPx: number;
     percentMaxHp: number;
     element: ElementType;
-    /** 例如疫爆要求目标已中毒 */
+  /** 例如疫爆要求目标已中毒 */
     requiresStatus?: ElementType;
   };
 }
@@ -417,13 +417,13 @@ export interface IDamageable {
   isAlive(): boolean;
   getCenter(): Vec2;
   getHpRatio(): number;
-  /** 返回实际造成的伤害（已含暴击 / 减免），用于飘字与统计 */
+ /** 返回实际造成的伤害（已含暴击 / 减免），用于飘字与统计 */
   applyDamage(spec: DamageSpec, sourcePos: Vec2): number;
 }
 
 /** 奖励 / 掉落项（三选一、宝箱、商店通用） */
 export interface RewardOffer {
-  /** UI 唯一 id */
+ /** UI 唯一 id */
   id: string;
   kind: RewardKind;
   title: string;
@@ -433,7 +433,7 @@ export interface RewardOffer {
   cardId?: string;
   weaponId?: string;
   amount?: number;
-  /** 仅商店有值 */
+ /** 仅商店有值 */
   cost?: number;
 }
 
@@ -446,12 +446,12 @@ export interface RunSnapshot {
   elapsedMs: number;
   gold: number;
   materials: number;
-  /** defId */
+ /** defId */
   primaryWeapon: string;
   secondaryWeapon: string;
   primaryLevel: number;
   secondaryLevel: number;
-  /** 本局装过的所有卡牌 id */
+ /** 本局装过的所有卡牌 id */
   cards: string[];
 }
 
@@ -484,13 +484,13 @@ export interface EnemyProjectileCfg {
 export interface ICombatService {
   registerTarget(target: IDamageable): void;
   unregisterTarget(id: string): void;
-  /** 扇形近战判定，返回命中数 */
+ /** 扇形近战判定，返回命中数 */
   meleeArc(origin: Vec2, aimRad: number, rangePx: number, arcDeg: number, spec: DamageSpec): number;
-  /** 圆形范围伤害，返回命中数 */
+ /** 圆形范围伤害，返回命中数 */
   circleArea(center: Vec2, radiusPx: number, spec: DamageSpec): number;
   spawnPlayerProjectile(cfg: PlayerProjectileCfg): void;
   spawnEnemyProjectile(cfg: EnemyProjectileCfg): void;
-  /** Boss 环形弹幕 */
+ /** Boss 环形弹幕 */
   radialEnemyShot(center: Vec2, count: number, speed: number, spec: DamageSpec): void;
   damageNumber(at: Vec2, amount: number, crit: boolean, element: ElementType): void;
   shake(durationMs: number, intensity: number): void;
@@ -505,12 +505,12 @@ export interface IPlayerService {
   getHp(): { hp: number; maxHp: number };
   heal(amount: number): void;
   addMaxHp(amount: number): void;
-  /** 锻造被动：全局伤害加成（0.08 = +8%） */
+ /** 锻造被动：全局伤害加成（0.08 = +8%） */
   damagePctBonus(): number;
   equip(slot: WeaponSlot, defId: string): WeaponInstance;
   getWeapon(slot: WeaponSlot): WeaponInstance;
   getActiveSlot(): WeaponSlot;
-  /** 击杀结算时调用：主手 100%、副手 50% 分享经验 */
+ /** 击杀结算时调用：主手 100%、副手 50% 分享经验 */
   giveWeaponExp(amount: number): void;
   isAlive(): boolean;
   destroy(): void;
@@ -528,9 +528,9 @@ export interface IEnemyService {
 export interface IWeaponService {
   create(defId: string): WeaponInstance;
   installCard(inst: WeaponInstance, cardId: string): boolean;
-  /** 尝试攻击：冷却就绪则执行并返回 true */
+ /** 尝试攻击：冷却就绪则执行并返回 true */
   tryAttack(inst: WeaponInstance, origin: Vec2, aimRad: number, nowMs: number): boolean;
-  /** 每帧推进（连击窗口、冷却、进化特效计时） */
+ /** 每帧推进（连击窗口、冷却、进化特效计时） */
   update(dtMs: number, nowMs: number): void;
   cooldownRatio(inst: WeaponInstance, nowMs: number): number;
   recompute(inst: WeaponInstance): void;
@@ -542,7 +542,7 @@ export interface ICardService {
   canInstall(inst: WeaponInstance, cardId: string): { ok: boolean; reason?: string };
   computeStats(inst: WeaponInstance): WeaponStats;
   rollOffers(count: number, installedCardIds: readonly string[], unlockedIds: readonly string[]): CardDef[];
-  /** 填充 {value} 占位符，返回可直接显示的文案 */
+ /** 填充 {value} 占位符，返回可直接显示的文案 */
   describe(card: CardDef): string;
 }
 
@@ -570,7 +570,7 @@ export interface IDropService {
   roomRewards(room: RoomDef, totalRooms: number): RewardOffer[];
   chestReward(): RewardOffer;
   shopOffers(): RewardOffer[];
-  /** 把选择结果应用到局内状态；失败由调用方提示原因 */
+ /** 把选择结果应用到局内状态；失败由调用方提示原因 */
   applyReward(offer: RewardOffer, ctx: RewardContext): { ok: boolean; reason?: string };
 }
 
@@ -581,7 +581,7 @@ export interface IAudioService {
   stopBgm(): void;
   setMuted(muted: boolean): void;
   isMuted(): boolean;
-  /** 浏览器自动播放策略：首次用户交互后调用 */
+ /** 浏览器自动播放策略：首次用户交互后调用 */
   unlock(): void;
 }
 
@@ -589,11 +589,11 @@ export interface IAudioService {
 export interface SaveData {
   version: number;
   forge: {
-    /** 锻造材料 */
+  /** 锻造材料 */
     materials: number;
-    /** 已购买 unlock id */
+  /** 已购买 unlock id */
     unlocked: string[];
-    /** 预留给后续等级化被动 */
+  /** 预留给后续等级化被动 */
     upgrades: Record<string, number>;
   };
   stats: {
@@ -618,7 +618,7 @@ export interface ISaveService {
   commit(): void;
   addMaterials(n: number): void;
   isUnlocked(id: string): boolean;
-  /** 返回是否购买成功 */
+ /** 返回是否购买成功 */
   unlock(id: string): boolean;
   markSeen(kind: 'weapon' | 'card' | 'enemy', id: string): void;
   hasSeen(kind: 'weapon' | 'card' | 'enemy', id: string): boolean;
@@ -677,14 +677,14 @@ export interface IEventBus {
  * ============================================================ */
 
 export interface EventMap {
-  /* --- 玩家 --- */
+ /* --- 玩家 --- */
   'player:stats': { hp: number; maxHp: number };
   'player:died': Record<string, never>;
   'player:dash': { cooldownRatio: number };
   'combat:lifesteal': { amount: number };
   'combat:hit': { at: Vec2; amount: number; crit: boolean; element: ElementType };
 
-  /* --- 武器 / 卡牌（P3 发） --- */
+ /* --- 武器 / 卡牌（P3 发） --- */
   'weapon:state': {
     slot: WeaponSlot;
     defId: string;
@@ -700,13 +700,13 @@ export interface EventMap {
   'card:installed': { slot: WeaponSlot; cardId: string };
   'card:rejected': { cardId: string; reason: string };
 
-  /* --- 敌人 / Boss（P2 发） --- */
+ /* --- 敌人 / Boss（P2 发） --- */
   'enemy:died': { enemyId: string; at: Vec2; exp: number; gold: number; material: number };
   'enemy:spawned': { enemyId: string; boss: boolean };
   'boss:hp': { hp: number; maxHp: number };
   'boss:phase': { index: number; announce: string };
 
-  /* --- 房间 / 流程（P4 发） --- */
+ /* --- 房间 / 流程（P4 发） --- */
   'room:entered': { index: number; total: number; roomId: string; type: string };
   'room:wave': { index: number; current: number; total: number };
   'room:cleared': { index: number; roomId: string };
@@ -720,12 +720,12 @@ export interface EventMap {
   };
   'run:ended': { snapshot: RunSnapshot };
 
-  /* --- 奖励 --- */
+ /* --- 奖励 --- */
   'reward:offers': { offers: RewardOffer[]; source: 'room' | 'chest' | 'shop' };
   'reward:chosen': { offer: RewardOffer };
   'reward:applied': { offer: RewardOffer; ok: boolean };
 
-  /* --- 存档 / UI --- */
+ /* --- 存档 / UI --- */
   'save:changed': Record<string, never>;
   'ui:toast': { text: string; color?: string };
   'data:invalid': { errors: string[] };

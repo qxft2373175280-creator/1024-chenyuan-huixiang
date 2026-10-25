@@ -1,6 +1,6 @@
 /**
  * 数据层类型出口 —— 只做类型聚合，不含运行时逻辑
- * 负责人：P1
+ * 
  */
 import type {
   CardDef,
@@ -51,13 +51,13 @@ export interface DataBundle {
   player: PlayerDef;
   rooms: RoomsFileDef;
   forge: ForgeFileDef;
-  /** PARRY-01：弹反（契约外增量，独立文件） */
+ /**：弹反（契约外增量，独立文件） */
   parry: ParryFileDef;
-  /** TUTORIAL-01：新手教程（契约外增量，独立文件） */
+ /**：新手教程（契约外增量，独立文件） */
   tutorial: TutorialFileDef;
-  /** R2：主界面功能指引 */
+ /** 主界面功能指引 */
   guide: MenuGuideFileDef;
-  /** R4/R5：关卡循环与难度曲线 */
+ /** / 关卡循环与难度曲线 */
   stages: StagesFileDef;
 }
 
@@ -67,6 +67,6 @@ export type LevelScaling = WeaponsFileDef['levelScaling'];
 export interface ValidationResult {
   errors: string[];
   warnings: string[];
-  /** 说明性信息：不影响通过、不计入提示数（例：Boss/无波次房布局允许没有刷怪点 S） */
+ /** 说明性信息：不影响通过、不计入提示数（例：Boss/无波次房布局允许没有刷怪点 S） */
   infos: string[];
 }

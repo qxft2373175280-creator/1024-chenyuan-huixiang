@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 数据校验 CLI —— 与运行时共用同一套规则（src/data/validate.ts）
- * 负责人：P1
+ * 
  *
  * 用法：npm run data:validate
  */

@@ -1,12 +1,12 @@
 /**
  * 程序化占位贴图 —— 在没有任何美术资源时也能跑，key 与真素材完全一致
- * 负责人：P1
+ * 
  *
  * 规则：
- *  - key 由数据 id 推导（见 core/keys.ts）；美术替换时只需放同名 PNG + manifest 登记
- *  - 素材按《方案文档.md》§10.8 的逻辑尺寸绘制，生成时统一放大 PIXEL_SCALE 倍
- *    （实体/HUD 直接 1:1 使用，避免各处再记一个缩放系数；P2/P4 代码即按此约定写）
- *  - 同一 id 永远生成同一张图（不使用随机数）
+ * - key 由数据 id 推导（见 core/keys.ts）；美术替换时只需放同名 PNG + manifest 登记
+ * - 素材按《设计文档》§10.8 的逻辑尺寸绘制，生成时统一放大 PIXEL_SCALE 倍
+ *  （实体/HUD 直接 1:1 使用，避免各处再记一个缩放系数；P2/P4 代码即按此约定写）
+ * - 同一 id 永远生成同一张图（不使用随机数）
  */
 import Phaser from 'phaser';
 import { TEX_KEYS } from '../core/keys';
@@ -31,28 +31,28 @@ export function ensureTexture(scene: Phaser.Scene, key: string, width: number, h
 
 function drawPlayer(g: G, state: 'idle' | 'run' | 'dash' | 'hurt'): void {
   const bodyColor = state === 'dash' ? PALETTE[11] : PALETTE[12];
-  // 腿
+ // 腿
   g.fillStyle(PALETTE[1], 1);
   g.fillRect(11, 24, 4, 6);
   g.fillRect(17, 24, 4, 6);
-  // 身体
+ // 身体
   g.fillStyle(bodyColor, 1);
   g.fillRect(9, 13, 14, 13);
   g.fillRect(8, 16, 2, 7);
   g.fillRect(22, 16, 2, 7);
-  // 头
+ // 头
   g.fillStyle(PALETTE[4], 1);
   g.fillRect(11, 5, 10, 9);
-  // 头发 / 兜帽
+ // 头发 / 兜帽
   g.fillStyle(PALETTE[1], 1);
   g.fillRect(11, 3, 10, 4);
   g.fillRect(9, 6, 2, 6);
   g.fillRect(21, 6, 2, 6);
-  // 眼睛
+ // 眼睛
   g.fillStyle(PALETTE[6], 1);
   g.fillRect(13, 9, 2, 2);
   g.fillRect(18, 9, 2, 2);
-  // 描边
+ // 描边
   g.lineStyle(1, PALETTE[0], 1);
   g.strokeRect(9.5, 12.5, 13, 14);
   if (state === 'hurt') {
@@ -74,18 +74,18 @@ function drawEnemy(g: G, size: number, color: number, boss: boolean): void {
   const x = margin;
   const y = size - height - margin;
 
-  // 阴影
+ // 阴影
   g.fillStyle(PALETTE[0], 0.55);
   g.fillRect(x + 2, size - margin - 2, width - 4, 2);
-  // 身体（三层堆叠模拟圆角）
+ // 身体（三层堆叠模拟圆角）
   g.fillStyle(color, 1);
   g.fillRect(x + 2, y, width - 4, height);
   g.fillRect(x, y + 3, width, height - 6);
   g.fillRect(x + 1, y + 1, width - 2, height - 2);
-  // 描边
+ // 描边
   g.lineStyle(1, PALETTE[0], 0.85);
   g.strokeRect(x + 0.5, y + 3.5, width - 1, height - 7);
-  // 眼睛
+ // 眼睛
   const eyeY = y + Math.round(height * 0.35);
   const eyeGap = Math.max(4, Math.round(width * 0.26));
   g.fillStyle(PALETTE[6], 1);
@@ -95,7 +95,7 @@ function drawEnemy(g: G, size: number, color: number, boss: boolean): void {
   g.fillRect(Math.round(size / 2) - eyeGap, eyeY + 1, 1, 1);
   g.fillRect(Math.round(size / 2) + eyeGap - 1, eyeY + 1, 1, 1);
   if (boss) {
-    // 王冠
+  // 王冠
     g.fillStyle(PALETTE[9], 1);
     g.fillRect(x + Math.round(width * 0.25), y - 4, 3, 4);
     g.fillRect(x + Math.round(width * 0.5) - 1, y - 6, 3, 6);
@@ -110,34 +110,34 @@ function drawWeapon(g: G, category: 'melee' | 'ranged' | 'elemental', accent: nu
   g.fillStyle(PALETTE[1], 0.9);
   g.fillRect(0, 0, 16, 16);
   if (category === 'melee') {
-    // 剑刃（斜向像素阶梯）
+  // 剑刃（斜向像素阶梯）
     g.fillStyle(PALETTE[5], 1);
     for (let i = 0; i < 8; i++) g.fillRect(4 + i, 11 - i, 2, 2);
     g.fillStyle(PALETTE[6], 1);
     g.fillRect(5, 10, 1, 1);
-    // 护手
+  // 护手
     g.fillStyle(accent, 1);
     g.fillRect(3, 11, 5, 2);
-    // 剑柄
+  // 剑柄
     g.fillStyle(PALETTE[15], 1);
     g.fillRect(2, 13, 3, 3);
     return;
   }
   if (category === 'ranged') {
-    // 枪身
+  // 枪身
     g.fillStyle(PALETTE[4], 1);
     g.fillRect(3, 6, 10, 3);
     g.fillStyle(PALETTE[2], 1);
     g.fillRect(3, 5, 9, 1);
-    // 握把
+  // 握把
     g.fillStyle(PALETTE[15], 1);
     g.fillRect(6, 9, 3, 5);
-    // 枪口
+  // 枪口
     g.fillStyle(accent, 1);
     g.fillRect(12, 6, 2, 3);
     return;
   }
-  // 法杖
+ // 法杖
   g.fillStyle(PALETTE[15], 1);
   g.fillRect(7, 6, 2, 9);
   g.fillStyle(PALETTE[5], 1);
@@ -151,14 +151,14 @@ function drawWeapon(g: G, category: 'melee' | 'ranged' | 'elemental', accent: nu
 /* ---------------- 卡牌图标 ---------------- */
 
 function drawCard(g: G, rarity: number, accent: number, tags: readonly string[]): void {
-  // 卡面底
+ // 卡面底
   g.fillStyle(PALETTE[1], 1);
   g.fillRect(2, 1, 28, 30);
   g.fillRect(1, 2, 30, 28);
-  // 稀有度边框
+ // 稀有度边框
   g.lineStyle(2, rarity, 1);
   g.strokeRect(2, 2, 28, 28);
-  // 图标底
+ // 图标底
   g.fillStyle(PALETTE[0], 1);
   g.fillRect(6, 6, 20, 16);
   g.fillStyle(accent, 0.22);
@@ -202,7 +202,7 @@ function drawCard(g: G, rarity: number, accent: number, tags: readonly string[])
     g.fillTriangle(cx + 6, 10, cx + 10, 13, cx + 6, 17);
   }
 
-  // 底部稀有度条
+ // 底部稀有度条
   g.fillStyle(rarity, 0.9);
   g.fillRect(6, 25, 20, 2);
 }
@@ -215,7 +215,7 @@ function drawTile(g: G, kind: 'floor' | 'floor2' | 'wall' | 'chest' | 'shop' | '
     g.fillStyle(PALETTE[1], 1);
     g.fillRect(0, 0, s, s);
     g.fillStyle(PALETTE[2], 1);
-    // 确定性的碎石点
+  // 确定性的碎石点
     g.fillRect(3, 4, 2, 1);
     g.fillRect(10, 9, 2, 2);
     g.fillRect(6, 12, 1, 1);
@@ -236,7 +236,7 @@ function drawTile(g: G, kind: 'floor' | 'floor2' | 'wall' | 'chest' | 'shop' | '
     g.fillRect(0, 0, s, 2);
     g.fillStyle(PALETTE[0], 0.9);
     g.fillRect(0, s - 1, s, 1);
-    // 砖缝
+  // 砖缝
     g.fillStyle(PALETTE[0], 0.55);
     g.fillRect(7, 3, 1, 5);
     g.fillRect(3, 9, 1, 3);
@@ -277,7 +277,7 @@ function drawTile(g: G, kind: 'floor' | 'floor2' | 'wall' | 'chest' | 'shop' | '
     g.fillRect(12, 11, 2, 2);
     return;
   }
-  // door
+ // door
   g.fillStyle(PALETTE[15], 1);
   g.fillRect(3, 2, 10, 13);
   g.fillStyle(PALETTE[0], 1);
@@ -330,7 +330,7 @@ function drawFx(g: G, kind: 'slash' | 'hit' | 'poison' | 'evolve', size: number)
     g.fillCircle(half - 6, half - 5, 1);
     return;
   }
-  // evolve
+ // evolve
   g.lineStyle(3, PALETTE[13], 0.9);
   g.strokeCircle(half, half, half - 6);
   g.lineStyle(1, PALETTE[14], 0.8);
@@ -359,33 +359,33 @@ const ENEMY_COLORS: Record<string, number> = {
  * 必须在 BootScene.create 里调用，之后所有场景可直接用 key。
  */
 export function generateAll(scene: Phaser.Scene): void {
-  // 玩家四态
+ // 玩家四态
   ensureTexture(scene, TEX_KEYS.PLAYER_IDLE, 32, 32, (g) => drawPlayer(g, 'idle'));
   ensureTexture(scene, TEX_KEYS.PLAYER_RUN, 32, 32, (g) => drawPlayer(g, 'run'));
   ensureTexture(scene, TEX_KEYS.PLAYER_DASH, 32, 32, (g) => drawPlayer(g, 'dash'));
   ensureTexture(scene, TEX_KEYS.PLAYER_HURT, 32, 32, (g) => drawPlayer(g, 'hurt'));
 
-  // 武器（icon 16×16）
+ // 武器（icon 16×16）
   for (const weapon of allWeapons()) {
     const accent = weapon.tags.includes('fire') ? PALETTE[8] : PALETTE[11];
     ensureTexture(scene, weapon.textureKey, 16, 16, (g) => drawWeapon(g, weapon.category, accent));
   }
 
-  // 敌人
+ // 敌人
   for (const enemy of allEnemies()) {
     const size = Math.max(24, Math.min(56, enemy.radiusPx * 2));
     const color = ENEMY_COLORS[enemy.id] ?? PALETTE[4];
     ensureTexture(scene, enemy.textureKey, size, size, (g) => drawEnemy(g, size, color, enemy.isBoss === true));
   }
 
-  // 卡牌
+ // 卡牌
   for (const card of allCards()) {
     ensureTexture(scene, card.textureKey, 32, 32, (g) =>
       drawCard(g, rarityColor(card.rarity), tagColor(card.tags), card.tags),
     );
   }
 
-  // 瓦片
+ // 瓦片
   ensureTexture(scene, TEX_KEYS.TILE_FLOOR_01, 16, 16, (g) => drawTile(g, 'floor'));
   ensureTexture(scene, TEX_KEYS.TILE_FLOOR_02, 16, 16, (g) => drawTile(g, 'floor2'));
   ensureTexture(scene, TEX_KEYS.TILE_WALL_01, 16, 16, (g) => drawTile(g, 'wall'));
@@ -394,23 +394,23 @@ export function generateAll(scene: Phaser.Scene): void {
   ensureTexture(scene, TEX_KEYS.TILE_BOSS_FLOOR, 16, 16, (g) => drawTile(g, 'boss'));
   ensureTexture(scene, TEX_KEYS.TILE_DOOR, 16, 16, (g) => drawTile(g, 'door'));
 
-  // 弹道
+ // 弹道
   ensureTexture(scene, TEX_KEYS.PROJ_BASIC, 8, 8, (g) => drawProjectile(g, PALETTE[11]));
   ensureTexture(scene, TEX_KEYS.PROJ_ENEMY, 8, 8, (g) => drawProjectile(g, PALETTE[7]));
 
-  // 特效
+ // 特效
   ensureTexture(scene, TEX_KEYS.FX_SLASH, 32, 32, (g) => drawFx(g, 'slash', 32));
   ensureTexture(scene, TEX_KEYS.FX_HIT, 32, 32, (g) => drawFx(g, 'hit', 32));
   ensureTexture(scene, TEX_KEYS.FX_POISON, 32, 32, (g) => drawFx(g, 'poison', 32));
   ensureTexture(scene, TEX_KEYS.FX_EVOLVE, 64, 64, (g) => drawFx(g, 'evolve', 64));
 
-  // 1px 白块：碎裂 / 粒子 / 预警圈基元（P2 用 setTint 上色）
+ // 1px 白块：碎裂 / 粒子 / 预警圈基元（P2 用 setTint 上色）
   ensureTexture(scene, TEX_KEYS.PIXEL, 8, 8, (g) => {
     g.fillStyle(0xffffff, 1);
     g.fillRect(0, 0, 8, 8);
   });
 
-  // UI 基础件（32×32 九宫格风格面板与卡框）
+ // UI 基础件（32×32 九宫格风格面板与卡框）
   ensureTexture(scene, TEX_KEYS.UI_CARD_FRAME, 32, 32, (g) => {
     g.fillStyle(PALETTE[1], 1);
     g.fillRect(0, 0, 32, 32);
@@ -432,13 +432,13 @@ export function generateAll(scene: Phaser.Scene): void {
     g.fillRect(6, 4, 4, 3);
   });
 
-  // P3 非卡奖励图标（宝箱 / 商店 / 三选一）：武器经验 / 材料 / 回血
+ // P3 非卡奖励图标（宝箱 / 商店 / 三选一）：武器经验 / 材料 / 回血
   ensureTexture(scene, TEX_KEYS.ICON_WEAPON_EXP, 16, 16, (g) => {
     g.fillStyle(PALETTE[1], 1);
     g.fillRect(0, 0, 16, 16);
     g.lineStyle(1, PALETTE[9], 1);
     g.strokeRect(1, 1, 14, 14);
-    // 上升箭头（经验）
+  // 上升箭头（经验）
     g.fillStyle(PALETTE[9], 1);
     g.fillTriangle(8, 3, 13, 9, 3, 9);
     g.fillRect(6, 9, 4, 4);
@@ -448,7 +448,7 @@ export function generateAll(scene: Phaser.Scene): void {
     g.fillRect(0, 0, 16, 16);
     g.lineStyle(1, PALETTE[11], 1);
     g.strokeRect(1, 1, 14, 14);
-    // 菱形矿石
+  // 菱形矿石
     g.fillStyle(PALETTE[11], 1);
     g.fillTriangle(8, 3, 13, 8, 8, 13);
     g.fillTriangle(8, 3, 3, 8, 8, 13);
@@ -460,7 +460,7 @@ export function generateAll(scene: Phaser.Scene): void {
     g.fillRect(0, 0, 16, 16);
     g.lineStyle(1, PALETTE[10], 1);
     g.strokeRect(1, 1, 14, 14);
-    // 十字（回血）
+  // 十字（回血）
     g.fillStyle(PALETTE[10], 1);
     g.fillRect(6, 3, 4, 10);
     g.fillRect(3, 6, 10, 4);

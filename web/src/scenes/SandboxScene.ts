@@ -1,7 +1,7 @@
 /**
  * 战斗训练场（P2 自测场景，不属于正式流程）。
  *
- * 目的：在 P4 的 GameScene 落地前，能独立验收 M1 / P2-S1~S5 的全部条目：
+ * 目的：在 GameScene 落地前，能独立测试 的全部条目：
  * WASD 移动、左键攻击、三类 AI、Boss 阶段、命中反馈、重开不泄漏。
  *
  * 正式流程里的 `?debug=sandbox` 由 P4 在 GameScene 里实现；本场景可以直接复用这里的刷怪与建墙逻辑。
@@ -74,7 +74,7 @@ export class SandboxScene extends Phaser.Scene {
     this.refreshStatus();
   }
 
-  /* ============================ 建场 ============================ */
+ /* ============================ 建场 ============================ */
 
   private buildArena(): void {
     this.add
@@ -115,7 +115,7 @@ export class SandboxScene extends Phaser.Scene {
     wall.refreshBody();
   }
 
-  /* ============================ HUD（P2 调试用，正式 HUD 归 P4） ============================ */
+ /* ============================ HUD（P2 调试用，正式 HUD 归 P4） ============================ */
 
   private buildHud(): void {
     this.statusText = this.add
@@ -153,7 +153,7 @@ export class SandboxScene extends Phaser.Scene {
     if (!player) return;
     const hp = player.getHp();
     const weapon = player.getWeapon(player.getActiveSlot());
-    // 显示中文名 + 等级 + 卡槽（原来直接打 defId，联调时不好认）
+  // 显示中文名 + 等级 + 卡槽（原来直接打 defId，联调时不好认）
     const def = getWeaponDef(weapon.defId);
     const line =
       `HP ${Math.ceil(hp.hp)}/${hp.maxHp}  ｜  ${player.getActiveSlot() === 'primary' ? '主手' : '副手'}：` +
@@ -166,7 +166,7 @@ export class SandboxScene extends Phaser.Scene {
     this.enemyText.setText(`场上敌人 ${alive}`);
   }
 
-  /* ============================ 刷怪 ============================ */
+ /* ============================ 刷怪 ============================ */
 
   private spawnWave(): void {
     const enemy = this.enemyServiceRef;
@@ -212,7 +212,7 @@ export class SandboxScene extends Phaser.Scene {
     this.enemyServiceRef?.spawn('boss_warden', GAME_WIDTH / 2, GAME_HEIGHT / 2 - 180);
   }
 
-  /* ============================ 事件 ============================ */
+ /* ============================ 事件 ============================ */
 
   private bindEvents(): void {
     bus.on('player:died', this.onPlayerDied, this);
@@ -226,7 +226,7 @@ export class SandboxScene extends Phaser.Scene {
   }
 
   private onEnemyDied(payload: { enemyId: string; exp: number; gold: number; material: number }): void {
-    // P4 在正式流程里做这件事：击杀 → 武器经验
+  // P4 在正式流程里做这件事：击杀 → 武器经验
     this.playerServiceRef?.giveWeaponExp(payload.exp);
   }
 
@@ -252,7 +252,7 @@ export class SandboxScene extends Phaser.Scene {
     });
   }
 
-  /* ============================ 清理 ============================ */
+ /* ============================ 清理 ============================ */
 
   private cleanup(): void {
     bus.offAll(this);

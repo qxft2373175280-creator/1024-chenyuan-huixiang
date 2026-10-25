@@ -1,5 +1,5 @@
 /**
- * 三选一卡面（P4-S4）：卡面渲染 + 焦点 + 键盘操作。
+ * 三选一卡面：卡面渲染 + 焦点 + 键盘操作。
  * 纯展示 + 回调，不做奖励结算（那是 DropSystem 的事）。
  */
 
@@ -40,8 +40,8 @@ export class CardPicker {
       const card = this.buildCard(offer, index, x, y);
       this.cards.push(card.root);
       this.borders.push(card.border);
-      // 注意：容器没有 setSize（width/height = 0 → displayOrigin = 0），所以命中区必须用居中矩形。
-      // 若以后给 container 调 setSize，这里要同步改成 (0, 0, CARD_WIDTH, CARD_HEIGHT)。
+   // 注意：容器没有 setSize（width/height = 0 → displayOrigin = 0），所以命中区必须用居中矩形。
+   // 若以后给 container 调 setSize，这里要同步改成 (0, 0, CARD_WIDTH, CARD_HEIGHT)。
       card.root.setInteractive(
         new Phaser.Geom.Rectangle(-CARD_WIDTH / 2, -CARD_HEIGHT / 2, CARD_WIDTH, CARD_HEIGHT),
         Phaser.Geom.Rectangle.Contains,

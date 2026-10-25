@@ -19,7 +19,7 @@ const CHEST_HEAL_AMOUNT = 25;
 /** 清房材料奖励；§7.3.5 未给具体数值，暂定 1 */
 const ROOM_MATERIAL_AMOUNT = 1;
 // 注：精英房 epic 加权倍率在 CardSystem.weightOf 内部（×2）；这里按 TEX_KEYS 取图标 key
-/** 非卡奖励图标 key（需 P1 的 TextureFactory 提供同名占位图） */
+/** 非卡奖励图标 key（需 TextureFactory 提供同名占位图） */
 const ICON_WEAPON_EXP = 'ui_icon_weapon_exp';
 const ICON_MATERIAL = 'ui_icon_material';
 const ICON_HEAL = 'ui_icon_heal';
@@ -67,7 +67,7 @@ export class DropSystem implements IDropService {
       offers.push(this.healOffer(CHEST_HEAL_AMOUNT));
     }
 
-    // 超出 rewardCount 时优先裁掉卡牌，保留非卡项（§7.5：非卡选项永远占 1 个位）
+  // 超出 rewardCount 时优先裁掉卡牌，保留非卡项（§7.5：非卡选项永远占 1 个位）
     while (offers.length > room.rewardCount) {
       let lastCardIndex = -1;
       for (let i = 0; i < offers.length; i += 1) {
@@ -77,7 +77,7 @@ export class DropSystem implements IDropService {
     }
     while (offers.length < room.rewardCount) offers.push(this.fillerOffer(offers));
 
-    // §7.3.4 方案 A：可进化时三选一里必有一个「进化」选项
+  // §7.3.4 方案 A：可进化时三选一里必有一个「进化」选项
     const evolution = this.evolutionOffer();
     if (evolution && offers.length > 0) {
       const nonCardIndex = offers.findIndex((offer) => offer.kind !== 'card');
@@ -123,7 +123,7 @@ export class DropSystem implements IDropService {
 
   applyReward(offer: RewardOffer, ctx: RewardContext): { ok: boolean; reason?: string } {
     let result: { ok: boolean; reason?: string };
-    // installCard 自己会发 ui:toast / card:rejected；这里标记一下，避免同一结果提示两遍
+  // installCard 自己会发 ui:toast / card:rejected；这里标记一下，避免同一结果提示两遍
     let announced = false;
 
     switch (offer.kind) {
@@ -214,7 +214,7 @@ export class DropSystem implements IDropService {
           result = paid;
           break;
         }
-        // 满血也允许，返回 ok，由 UI 自己提示
+    // 满血也允许，返回 ok，由 UI 自己提示
         ctx.player.heal(offer.amount ?? DATA_FALLBACK.NO_BONUS);
         result = { ok: true };
         break;
@@ -295,7 +295,7 @@ export class DropSystem implements IDropService {
     }
     const unlocked = getService(this.scene, 'save').get().forge.unlocked;
     const cards = this.card.rollOffers(count, installed, unlocked, epicBias);
-    // 图鉴：出现在三选一/商店里就算「见过」（BUG-004：原来全项目没人调用 markSeen）
+  // 图鉴：出现在三选一/商店里就算「见过」（004：原来全项目没人调用 markSeen）
     const save = tryGetService(this.scene, 'save');
     for (const card of cards) save?.markSeen('card', card.id);
     return cards.map((card): RewardOffer => ({
@@ -336,13 +336,13 @@ export class DropSystem implements IDropService {
     return this.healOffer(CHEST_HEAL_AMOUNT);
   }
 
-  /** 三选一补位：优先选还没出现过的非卡 kind，保证选项互不重复 */
+ /** 三选一补位：优先选还没出现过的非卡 kind，保证选项互不重复 */
   private fillerOffer(existing: readonly RewardOffer[]): RewardOffer {
     const used = new Set(existing.map((offer) => offer.kind));
     if (!used.has('weaponExp')) return this.weaponExpOffer();
     if (!used.has('material')) return this.materialOffer(ROOM_MATERIAL_AMOUNT);
     if (!used.has('heal')) return this.healOffer(CHEST_HEAL_AMOUNT);
-    // rewardCount > 3 的极端情况：只允许重复武器经验
+  // rewardCount > 3 的极端情况：只允许重复武器经验
     return this.weaponExpOffer();
   }
 

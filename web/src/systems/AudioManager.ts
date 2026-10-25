@@ -1,11 +1,11 @@
 /**
  * 音频管理 —— 全部 WebAudio 合成，零音频资源依赖
- * 负责人：P1
+ * 
  *
  * 特点：
- *  - 音效：短促振荡器包络（16 个 key，见 core/keys.ts）
- *  - BGM：把一整段琶音「烘焙」成 AudioBuffer 循环播放（不用定时器，暂停/切歌无漂移）
- *  - 静音状态落存档；浏览器自动播放策略由 unlock() 在首次交互时解除
+ * - 音效：短促振荡器包络（16 个 key，见 core/keys.ts）
+ * - BGM：把一整段琶音「烘焙」成 AudioBuffer 循环播放（不用定时器，暂停/切歌无漂移）
+ * - 静音状态落存档；浏览器自动播放策略由 unlock() 在首次交互时解除
  */
 import type { IAudioService, ISaveService } from '../core/contracts';
 import type { BgmKey, SfxKey } from '../core/keys';
@@ -28,7 +28,7 @@ interface BgmSpec {
   gain: number;
 }
 
-/** 18 条音效曲线（对应《方案文档.md》§5.3.9；末 2 条为 PARRY-01 弹反） */
+/** 18 条音效曲线（对应《设计文档》§5.3.9；末 2 条为 弹反） */
 const SFX_SPECS: Record<SfxKey, SfxSpec> = {
   sfx_ui_click: { wave: 'square', from: 880, to: 660, durationMs: 60, gain: 0.16 },
   sfx_swing: { wave: 'sawtooth', from: 300, to: 120, durationMs: 100, gain: 0.18 },
@@ -46,9 +46,9 @@ const SFX_SPECS: Record<SfxKey, SfxSpec> = {
   sfx_room_clear: { wave: 'sine', from: 523, to: 784, durationMs: 350, gain: 0.18 },
   sfx_lose: { wave: 'triangle', from: 400, to: 120, durationMs: 600, gain: 0.2 },
   sfx_win: { wave: 'square', from: 523, to: 1046, durationMs: 600, gain: 0.2 },
-  // 弹反窗口开启：短促上滑的高音「叮」，要能在混战中穿透
+ // 弹反窗口开启：短促上滑的高音「叮」，要能在混战中穿透
   sfx_parry_ready: { wave: 'triangle', from: 1320, to: 1760, durationMs: 90, gain: 0.22 },
-  // 弹反成功：金属撞击 + 下坠余音
+ // 弹反成功：金属撞击 + 下坠余音
   sfx_parry_success: { wave: 'square', from: 1760, to: 440, durationMs: 260, gain: 0.24 },
 };
 
@@ -85,7 +85,7 @@ export class AudioManager implements IAudioService {
     this.muted = this.saveService.get().settings.muted;
   }
 
-  /** 首次用户交互后调用，解除浏览器自动播放限制 */
+ /** 首次用户交互后调用，解除浏览器自动播放限制 */
   unlock(): void {
     const context = this.ensureContext();
     if (context && context.state === 'suspended') {
@@ -164,7 +164,7 @@ export class AudioManager implements IAudioService {
       this.bgm.source.stop();
       this.bgm.source.disconnect();
     } catch {
-      // 已经停止的 source 再次 stop 会抛错，忽略
+   // 已经停止的 source 再次 stop 会抛错，忽略
     }
     this.bgm = null;
   }
@@ -187,7 +187,7 @@ export class AudioManager implements IAudioService {
     return this.muted;
   }
 
-  /** 把整段琶音渲染成可无缝循环的 AudioBuffer */
+ /** 把整段琶音渲染成可无缝循环的 AudioBuffer */
   private renderLoop(context: AudioContext, spec: BgmSpec): AudioBuffer {
     const sampleRate = context.sampleRate;
     const stepSec = spec.stepMs / 1000;

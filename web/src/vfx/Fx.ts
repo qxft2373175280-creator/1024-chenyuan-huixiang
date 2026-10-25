@@ -1,7 +1,7 @@
 /**
  * 命中反馈（P2）：飘字、命中火花、斩击、死亡碎裂、闪白、震屏、顿帧。
  *
- * 全部走对象池：飘字 24、火花 24、碎片 40（《方案文档》§2.7 性能预算）。
+ * 全部走对象池：飘字 24、火花 24、碎片 40（《设计文档》§2.7 性能预算）。
  */
 
 import Phaser from 'phaser';
@@ -42,7 +42,7 @@ export class FxSystem {
   private readonly textPool: ObjectPool<Phaser.GameObjects.Text>;
   private readonly sparkPool: ObjectPool<Phaser.GameObjects.Image>;
   private readonly particlePool: ObjectPool<Phaser.GameObjects.Image>;
-  /** 近战扇形轨迹（COMBAT-01）：用 Graphics 现画，半径/角度与命中判定共用同一组参数 */
+ /** 近战扇形轨迹()：用 Graphics 现画，半径/角度与命中判定共用同一组参数 */
   private readonly arcPool: Phaser.GameObjects.Graphics[] = [];
   private arcCursor = 0;
   private hitStopToken = 0;
@@ -96,7 +96,7 @@ export class FxSystem {
     }
   }
 
-  /** 伤害飘字：暴击更大更黄（《方案文档》§6.3.1 步骤 11） */
+ /** 伤害飘字：暴击更大更黄（《设计文档》§6.3.1 步骤 11） */
   damageNumber(at: Vec2, amount: number, crit: boolean, element: ElementType): void {
     const text = this.textPool.acquire();
     if (!text) return;
@@ -121,7 +121,7 @@ export class FxSystem {
     });
   }
 
-  /** 命中火花 */
+ /** 命中火花 */
   hitSpark(at: Vec2, crit: boolean): void {
     const spark = this.sparkPool.acquire();
     if (!spark) return;
@@ -145,13 +145,13 @@ export class FxSystem {
     });
   }
 
-  /**
-   * 近战扇形轨迹（COMBAT-01）。
-   *
-   * 关键约束：`at / aimRad / rangePx / arcDeg` 必须与 CombatSystem.meleeArc 的判定参数完全一致，
-   * 因此这个函数只负责「按判定参数画出来」，不自己做任何角度/距离换算。
-   * 角度按 Phaser 约定：0 朝右，rotation 直接等于 aimRad。
-   */
+ /**
+  * 近战扇形轨迹()。
+  *
+  * 关键约束：`at / aimRad / rangePx / arcDeg` 必须与 CombatSystem.meleeArc 的判定参数完全一致，
+  * 因此这个函数只负责「按判定参数画出来」，不自己做任何角度/距离换算。
+  * 角度按 Phaser 约定：0 朝右，rotation 直接等于 aimRad。
+  */
   meleeArcTrail(at: Vec2, aimRad: number, rangePx: number, arcDeg: number, tint: number): void {
     if (this.destroyed || this.arcPool.length === 0) return;
     const graphic = this.arcPool[this.arcCursor % this.arcPool.length];
@@ -195,12 +195,12 @@ export class FxSystem {
     });
   }
 
-  /** 当前存活的伤害飘字数量（验收脚本用它判断「未命中不显示数字」） */
+ /** 当前存活的伤害飘字数量（测试脚本用它判断「未命中不显示数字」） */
   activeDamageTexts(): number {
     return this.textPool.activeCount();
   }
 
-  /** 当前正在显示的近战扇形数量 */
+ /** 当前正在显示的近战扇形数量 */
   activeMeleeArcs(): number {
     let count = 0;
     for (const graphic of this.arcPool) {
@@ -209,7 +209,7 @@ export class FxSystem {
     return count;
   }
 
-  /** 中毒跳字用的小绿泡 */
+ /** 中毒跳字用的小绿泡 */
   poisonTick(at: Vec2, tint: number): void {
     const particle = this.particlePool.acquire();
     if (!particle) return;
@@ -231,7 +231,7 @@ export class FxSystem {
     });
   }
 
-  /** 元素弹拖尾（按调色板索引上色） */
+ /** 元素弹拖尾（按调色板索引上色） */
   trailPuff(x: number, y: number, colorIndex: number): void {
     const particle = this.particlePool.acquire();
     if (!particle) return;
@@ -253,7 +253,7 @@ export class FxSystem {
     });
   }
 
-  /** 死亡碎裂 */
+ /** 死亡碎裂 */
   deathBurst(at: Vec2, element: ElementType): void {
     const tint = hexToInt(PALETTE[ELEMENT_COLOR_INDEX[element] ?? DATA_FALLBACK.ELEMENT_COLOR_FALLBACK_INDEX]);
     for (let index = 0; index < DEATH_BURST_PARTICLES; index += 1) {
@@ -282,7 +282,7 @@ export class FxSystem {
     }
   }
 
-  /** 受击闪白（90ms 后恢复） */
+ /** 受击闪白（90ms 后恢复） */
   flash(sprite: Phaser.GameObjects.Sprite): void {
     if (!sprite.active) return;
     sprite.setTintFill(0xffffff);
@@ -296,7 +296,7 @@ export class FxSystem {
     this.scene.cameras.main.shake(clamp(durationMs, 0, SHAKE_MAX_MS), clamp(intensity, 0, 0.05));
   }
 
-  /** 顿帧：物理世界整体减速，手感上「卡一下」 */
+ /** 顿帧：物理世界整体减速，手感上「卡一下」 */
   hitStop(durationMs: number): void {
     const duration = clamp(durationMs, 0, HITSTOP_MAX_MS);
     if (duration <= 0 || this.destroyed) return;

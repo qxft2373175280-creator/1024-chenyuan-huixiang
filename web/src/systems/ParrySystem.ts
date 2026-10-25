@@ -1,20 +1,20 @@
 /**
- * 蓄力弹反系统（PARRY-01）—— 规则 + 预警圈表现 + 反馈 + 计数
+ * 蓄力弹反系统 —— 规则 + 预警圈表现 + 反馈 + 计数
  *
- * 分工（见《技术方案与AI工作令.md》§2.9）：
- *  - `Enemy` 负责状态机与时机（什么时候开窗口、什么时候放招）；
- *  - 本文件负责「配置读取 / 哪些武器能弹反 / 圈怎么画 / 成功失败怎么反馈 / 事件怎么发」。
+ * 职责分工：
+ * - `Enemy` 负责状态机与时机（什么时候开窗口、什么时候放招）；
+ * - 本文件负责「配置读取 / 哪些武器能弹反 / 圈怎么画 / 成功失败怎么反馈 / 事件怎么发」。
  *
  * 硬性约束：
- *  - 所有影响平衡的数字只从 `data/parry.json` 读，本文件只保留纯视觉常量；
- *  - 圈画在地板层（`DEPTH.FLOOR_DECAL + 1`），不许遮挡怪物与玩家；
- *  - 每个敌人实例一套圈，敌人回收 / 切房 / 重开必须 `hide()`，不留残影。
+ * - 所有影响平衡的数字只从 `data/parry.json` 读，本文件只保留纯视觉常量；
+ * - 圈画在地板层（`DEPTH.FLOOR_DECAL + 1`），不许遮挡怪物与玩家；
+ * - 每个敌人实例一套圈，敌人回收 / 切房 / 重开必须 `hide()`，不留残影。
  *
- * 计数口径（PARRY-01 修复，见《docs/changes/PARRY-01-蓄力弹反.md》§11）：
- *  - `stats()`：**本实例**（= 本场景生命周期）的计数，场景 SHUTDOWN 时随实例销毁；
- *  - `parrySessionTotals()`：**本页面会话**的累计计数（模块级，跨场景重开不清零，刷新页面才归零）；
- *  - 两者的增量必须与事件条数完全一致（windups↔windup_started、windows↔parry_window、
- *    parries↔parried、releases↔attack_released），验收脚本逐项断言。
+ * 计数口径：
+ * - `stats()`：**本实例**（= 本场景生命周期）的计数，场景 SHUTDOWN 时随实例销毁；
+ * - `parrySessionTotals()`：**本页面会话**的累计计数（模块级，跨场景重开不清零，刷新页面才归零）；
+ * - 两者的增量必须与事件条数完全一致（windups↔windup_started、windows↔parry_window、
+ *  parries↔parried、releases↔attack_released），测试脚本逐项断言。
  */
 import Phaser from 'phaser';
 import type { Vec2 } from '../core/contracts';
@@ -84,26 +84,26 @@ export function parrySessionTotals(game: Phaser.Game): Counters {
   return { ...readSession(game) };
 }
 
-/** 归零页面会话累计计数（验收脚本在「挂监听 / 建场景」之前调用） */
+/** 归零页面会话累计计数（测试脚本在「挂监听 / 建场景」之前调用） */
 export function resetParrySessionTotals(game: Phaser.Game): void {
   game.registry.set(SESSION_KEY, zeroCounters());
 }
 
 interface RingRecord {
-  /** 外圈：从 1.5 倍攻击范围收缩到 1 倍，颜色随进度变化（进度色） */
+ /** 外圈：从 1.5 倍攻击范围收缩到 1 倍，颜色随进度变化（进度色） */
   outer: Phaser.GameObjects.Arc;
-  /** 内圈：固定在攻击范围（= 目标范围），用「归属色」告诉玩家这是谁的圈 */
+ /** 内圈：固定在攻击范围（= 目标范围），用「归属色」告诉玩家这是谁的圈 */
   inner: Phaser.GameObjects.Arc;
-  /** 从怪物身上连到内圈的短刻度：多怪同时蓄力时用来判断归属 */
+ /** 从怪物身上连到内圈的短刻度：多怪同时蓄力时用来判断归属 */
   tick: Phaser.GameObjects.Rectangle;
-  /** 归属色（内圈 + 刻度同色） */
+ /** 归属色（内圈 + 刻度同色） */
   tint: number;
-  /** 刻度角度（弧度） */
+ /** 刻度角度（弧度） */
   tickAngle: number;
-  /** 圈的目标半径（= 怪物攻击范围） */
+ /** 圈的目标半径（= 怪物攻击范围） */
   targetRadius: number;
   startRadius: number;
-  /** 白光帧截止时间（scene.time.now 超过它后恢复窗口色） */
+ /** 白光帧截止时间（scene.time.now 超过它后恢复窗口色） */
   flashUntil: number;
 }
 
@@ -112,7 +112,7 @@ export class ParrySystem {
   private readonly fx: FxSystem;
   private readonly colors: ParryColors;
   private readonly tuningCache = new Map<string, ParryTuning>();
-  /** 运行期数值覆盖（教程降难度用；不写回 JSON，随场景实例销毁） */
+ /** 运行期数值覆盖（教程降难度用；不写回 JSON，随场景实例销毁） */
   private readonly tuningOverrides = new Map<string, Partial<ParryTuning>>();
   private readonly rings = new Map<string, RingRecord>();
   private counters: Counters = { windups: 0, windows: 0, parries: 0, releases: 0, earlyHits: 0 };
@@ -125,15 +125,15 @@ export class ParrySystem {
     this.colors = getParryConfig().global.colors;
   }
 
-  /* ============================ 规则读取 ============================ */
+ /* ============================ 规则读取 ============================ */
 
-  /** 该敌人是否开启弹反；返回规则（含可选数值覆盖）或 null */
+ /** 该敌人是否开启弹反；返回规则（含可选数值覆盖）或 null */
   ruleFor(enemyId: string): ParryEnemyRule | null {
     const rules = getParryConfig().enemies;
     return rules[enemyId] ?? null;
   }
 
-  /** 合并 global + 敌人覆盖后的最终数值 */
+ /** 合并 global + 敌人覆盖后的最终数值 */
   tuningFor(enemyId: string): ParryTuning {
     const cached = this.tuningCache.get(enemyId);
     if (cached) return cached;
@@ -154,26 +154,26 @@ export class ParrySystem {
     return merged;
   }
 
-  /**
-   * 运行期覆盖某个敌人的弹反数值（教程降难度用：把窗口从 120ms 放宽到 200ms）。
-   * 传 `null` 清除覆盖。只影响本实例，不写回 `parry.json`。
-   */
+ /**
+  * 运行期覆盖某个敌人的弹反数值（教程降难度用：把窗口从 120ms 放宽到 200ms）。
+  * 传 `null` 清除覆盖。只影响本实例，不写回 `parry.json`。
+  */
   setTuningOverride(enemyId: string, override: Partial<ParryTuning> | null): void {
     if (override === null) this.tuningOverrides.delete(enemyId);
     else this.tuningOverrides.set(enemyId, { ...(this.tuningOverrides.get(enemyId) ?? {}), ...override });
     this.tuningCache.delete(enemyId);
   }
 
-  /** 当前是否有运行期覆盖（调试/验收用） */
+ /** 当前是否有运行期覆盖（调试/调试用） */
   hasTuningOverride(enemyId: string): boolean {
     return this.tuningOverrides.has(enemyId);
   }
 
-  /**
-   * 从 DamageSpec.tags 解析「本次命中是哪把武器、是否近战挥砍」。
-   * 不是近战挥砍、或武器不在白名单 → null（不触发弹反，只算普通伤害）。
-   * 白名单在 parry.json（普通铁剑 + 其进化形态魔焰剑；手枪/法杖不在名单内）。
-   */
+ /**
+  * 从 DamageSpec.tags 解析「本次命中是哪把武器、是否近战挥砍」。
+  * 不是近战挥砍、或武器不在白名单 → null（不触发弹反，只算普通伤害）。
+  * 白名单在 parry.json（普通铁剑 + 其进化形态魔焰剑；手枪/法杖不在名单内）。
+  */
   weaponFromTags(tags?: readonly string[]): string | null {
     if (!tags || tags.length === 0) return null;
     const rule = getParryConfig().weapons;
@@ -187,13 +187,13 @@ export class ParrySystem {
     return null;
   }
 
-  /* ============================ 表现：预警圈 ============================ */
+ /* ============================ 表现：预警圈 ============================ */
 
-  /** 蓄力开始：建圈并发出 `enemy:windup_started` */
+ /** 蓄力开始：建圈并发出 `enemy:windup_started` */
   beginWindup(enemy: Enemy, attackRangePx: number, tuning: ParryTuning): void {
     if (this.destroyed) return;
     this.bump('windups');
-    // 圈的目标半径 = 怪物攻击范围（固定规则：起始 1.5 倍 → 结束 1.0 倍）
+  // 圈的目标半径 = 怪物攻击范围（固定规则：起始 1.5 倍 → 结束 1.0 倍）
     const targetRadius = Math.max(8, attackRangePx);
     const record = this.ensureRing(enemy, targetRadius, tuning);
     record.outer
@@ -214,7 +214,7 @@ export class ParrySystem {
     log.p2.debug('弹反蓄力开始', { enemyId: enemy.id, windupMs: tuning.windupTotalMs });
   }
 
-  /** 每帧推进圈：收缩 + 变色（窗口期固定红色 + 白光帧） */
+ /** 每帧推进圈：收缩 + 变色（窗口期固定红色 + 白光帧） */
   updateRing(enemy: Enemy, progress: number, phase: ParryRingPhase): void {
     if (this.destroyed) return;
     const record = this.rings.get(enemy.id);
@@ -226,7 +226,7 @@ export class ParrySystem {
     record.outer.setPosition(enemy.x, enemy.y).setRadius(Math.max(4, radius));
     record.inner.setPosition(enemy.x, enemy.y);
     this.updateTick(record, enemy);
-    // 窗口开启的「白光一帧」：描边换白，WINDOW_FLASH_MS 后恢复窗口色
+  // 窗口开启的「白光一帧」：描边换白，WINDOW_FLASH_MS 后恢复窗口色
     if (this.scene.time.now < record.flashUntil) {
       record.outer.setStrokeStyle(width + 2, hexToInt(this.colors.flash), 1);
       record.outer.setFillStyle(hexToInt(this.colors.flash), 0.06);
@@ -236,7 +236,7 @@ export class ParrySystem {
     record.outer.setFillStyle(hexToInt(color), phase === 'window' ? 0.08 : 0.05);
   }
 
-  /** 窗口开启：白光 + 音效 + 顿帧 + `enemy:parry_window` */
+ /** 窗口开启：白光 + 音效 + 顿帧 + `enemy:parry_window` */
   onWindowOpen(enemy: Enemy, tuning: ParryTuning): void {
     if (this.destroyed) return;
     this.bump('windows');
@@ -245,7 +245,7 @@ export class ParrySystem {
       record.flashUntil = this.scene.time.now + WINDOW_FLASH_MS;
       record.outer.setStrokeStyle(RING_WIDTH_WINDOW + 2, hexToInt(this.colors.flash), 1);
       record.outer.setFillStyle(hexToInt(this.colors.flash), 0.06);
-      // 窗口期让归属刻度更亮，帮助玩家确认「是这个怪的圈」
+   // 窗口期让归属刻度更亮，帮助玩家确认「是这个怪的圈」
       record.tick.setFillStyle(record.tint, 1);
     }
     tryGetService(this.scene, 'audio')?.play('sfx_parry_ready');
@@ -258,7 +258,7 @@ export class ParrySystem {
     log.p2.debug('弹反窗口开启', { enemyId: enemy.id, windowMs: tuning.parryWindowMs });
   }
 
-  /** 弹反成功：闪白 + 冲击波 + 顿帧 + 震屏 + `enemy:parried` */
+ /** 弹反成功：闪白 + 冲击波 + 顿帧 + 震屏 + `enemy:parried` */
   onParried(enemy: Enemy, weaponId: string, perfect: boolean): void {
     if (this.destroyed) return;
     this.bump('parries');
@@ -275,7 +275,7 @@ export class ParrySystem {
     this.hide(enemy);
   }
 
-  /** 蓄力放招（没能弹反）：计数 + 收圈 + `enemy:attack_released` */
+ /** 蓄力放招（没能弹反）：计数 + 收圈 + `enemy:attack_released` */
   onAttackReleased(enemy: Enemy): void {
     if (this.destroyed) return;
     this.bump('releases');
@@ -285,18 +285,18 @@ export class ParrySystem {
     this.hide(enemy);
   }
 
-  /** 硬直开始（弹反成功 / 放招之后） */
+ /** 硬直开始（弹反成功 / 放招之后） */
   onRecovery(enemy: Enemy, reason: 'parried' | 'released'): void {
     if (this.destroyed) return;
     bus.emit('enemy:recovery_started', { enemyId: enemy.id, at: { x: enemy.x, y: enemy.y }, reason });
   }
 
-  /** 窗口前就挨打（只算普通伤害；用于人工调参时看「手快了多少」） */
+ /** 窗口前就挨打（只算普通伤害；用于人工调参时看「手快了多少」） */
   countEarlyHit(): void {
     this.bump('earlyHits');
   }
 
-  /** 收圈（敌人回收 / 切房 / 重开 / 弹反成功 / 放招都要调） */
+ /** 收圈（敌人回收 / 切房 / 重开 / 弹反成功 / 放招都要调） */
   hide(enemy: Enemy): void {
     const record = this.rings.get(enemy.id);
     if (!record) return;
@@ -310,10 +310,10 @@ export class ParrySystem {
     return this.rings.size;
   }
 
-  /**
-   * 调试 / 验收脚本用：读某个敌人的圈当前状态。
-   * `tint` 是归属色（内圈 + 刻度），`tickAngle` 是刻度方向，用来断言多怪同时蓄力可分辨。
-   */
+ /**
+  * 调试 / 测试脚本用：读某个敌人的圈当前状态。
+  * `tint` 是归属色（内圈 + 刻度），`tickAngle` 是刻度方向，用来断言多怪同时蓄力可分辨。
+  */
   ringSnapshot(enemy: Enemy): {
     radius: number;
     strokeColor: number;
@@ -338,25 +338,25 @@ export class ParrySystem {
     };
   }
 
-  /** 本实例（本场景）计数 */
+ /** 本实例（本场景）计数 */
   stats(): ParryStats {
     return { ...this.counters, rings: this.rings.size };
   }
 
-  /**
-   * 本实例所属游戏的「页面会话累计」计数。
-   * 数据在 game.registry 里，因此跨场景/重开连续累加，也能被场景创建前的脚本 reset。
-   */
+ /**
+  * 本实例所属游戏的「页面会话累计」计数。
+  * 数据在 game.registry 里，因此跨场景/重开连续累加，也能被场景创建前的脚本 reset。
+  */
   sessionTotals(): Counters {
     return { ...readSession(this.scene.game) };
   }
 
-  /** 归零会话累计（验收脚本优先用模块函数；这里给调试面板留一个入口） */
+ /** 归零会话累计（测试脚本优先用模块函数；这里给调试面板留一个入口） */
   resetSessionTotals(): void {
     resetParrySessionTotals(this.scene.game);
   }
 
-  /** 归零本实例计数（调试/验收用；不影响事件流） */
+ /** 归零本实例计数（调试/调试用；不影响事件流） */
   resetStats(): void {
     this.counters = { windups: 0, windows: 0, parries: 0, releases: 0, earlyHits: 0 };
   }
@@ -374,9 +374,9 @@ export class ParrySystem {
     this.tuningOverrides.clear();
   }
 
-  /* ============================ 内部工具 ============================ */
+ /* ============================ 内部工具 ============================ */
 
-  /** 计数唯一入口：实例计数 + 会话累计同时 +1，保证「系统统计」与「事件」一一对应 */
+ /** 计数唯一入口：实例计数 + 会话累计同时 +1，保证「系统统计」与「事件」一一对应 */
   private bump(key: keyof Counters): void {
     this.counters[key] += 1;
     const session = readSession(this.scene.game);
@@ -414,7 +414,7 @@ export class ParrySystem {
     return record;
   }
 
-  /** 归属色：优先选当前没被其它蓄力怪占用的色相，保证多怪同屏可分辨 */
+ /** 归属色：优先选当前没被其它蓄力怪占用的色相，保证多怪同屏可分辨 */
   private pickTint(): number {
     const used = new Set<number>();
     for (const record of this.rings.values()) used.add(record.tint);
@@ -422,12 +422,12 @@ export class ParrySystem {
       const color = PALETTE[index] ?? PALETTE[PALETTE_INDEX.CYAN];
       if (!used.has(color)) return color;
     }
-    // 同时蓄力的怪比色相还多时，按数量轮转（≥ 4 只怪的场景本来也很少）
+  // 同时蓄力的怪比色相还多时，按数量轮转（≥ 4 只怪的场景本来也很少）
     const fallback = OWNER_TINTS[this.rings.size % OWNER_TINTS.length] ?? PALETTE_INDEX.CYAN;
     return PALETTE[fallback] ?? PALETTE[PALETTE_INDEX.CYAN];
   }
 
-  /** 刻度方向：按当前已有圈的数量与角度岔开，保证多怪同屏时每个刻度都能看清 */
+ /** 刻度方向：按当前已有圈的数量与角度岔开，保证多怪同屏时每个刻度都能看清 */
   private pickTickAngle(): number {
     let seed = 0;
     for (const record of this.rings.values()) seed += Math.round(record.tickAngle * 1000);
@@ -445,7 +445,7 @@ export class ParrySystem {
     return angle;
   }
 
-  /** 刻度：从怪物边缘连到内圈，长度随圈大小变化，方向固定（不随玩家转） */
+ /** 刻度：从怪物边缘连到内圈，长度随圈大小变化，方向固定（不随玩家转） */
   private updateTick(record: RingRecord, enemy: Enemy): void {
     const startRadius = enemy.def.radiusPx + 2;
     const endRadius = record.targetRadius;
@@ -459,13 +459,13 @@ export class ParrySystem {
       .setRotation(record.tickAngle);
   }
 
-  /** 蓝 → 黄 → 红（进度 0..1；窗口开始前必须已经变红） */
+ /** 蓝 → 黄 → 红（进度 0..1；窗口开始前必须已经变红） */
   private colorAt(progress: number): string {
     if (progress <= COLOR_WARN_AT) return mixHex(this.colors.charge, this.colors.warn, progress / COLOR_WARN_AT);
     return mixHex(this.colors.warn, this.colors.window, (progress - COLOR_WARN_AT) / (1 - COLOR_WARN_AT));
   }
 
-  /** 弹反成功的扩散冲击波 */
+ /** 弹反成功的扩散冲击波 */
   private shockwave(at: Vec2, radius: number, tint: number): void {
     const wave = this.scene.add
       .circle(at.x, at.y, Math.max(12, radius), tint, 0)
@@ -481,7 +481,7 @@ export class ParrySystem {
     });
   }
 
-  /** 首次遇到蓄力怪时给一条一次性提示（教学，不影响平衡） */
+ /** 首次遇到蓄力怪时给一条一次性提示（教学，不影响平衡） */
   private showFirstTimeHint(): void {
     if (this.hintShown) return;
     this.hintShown = true;
@@ -510,7 +510,7 @@ function mixHex(from: string, to: string, t: number): string {
   return `#${channel(0)}${channel(1)}${channel(2)}`;
 }
 
-/** 场景内的 ParrySystem 注册键（调试面板 / headless 验收脚本用，不进契约） */
+/** 场景内的 ParrySystem 注册键（调试面板 / headless 测试脚本用，不进契约） */
 export const PARRY_REGISTRY_KEY = 'parry.system';
 
 export function getParrySystem(scene: Phaser.Scene): ParrySystem | null {

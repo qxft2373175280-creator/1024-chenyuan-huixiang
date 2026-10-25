@@ -1,5 +1,5 @@
 /**
- * HUD（P4-S3）：血条 / 双武器槽 / 卡槽 / 金币材料 / 房间进度 / 冲刺冷却 / Boss 血条 / 波次 / toast / 房间名。
+ * HUD：血条 / 双武器槽 / 卡槽 / 金币材料 / 房间进度 / 冲刺冷却 / Boss 血条 / 波次 / toast / 房间名。
  *
  * 硬性要求（§8.3.4）：全部 `setScrollFactor(0)` + `DEPTH.HUD`；**只订阅事件，不轮询服务**；
  * 文本只在值变化时 setText。
@@ -72,7 +72,7 @@ export class HUD {
       depth: number,
     ): T => object.setScrollFactor(0).setDepth(depth);
 
-    // 血条
+  // 血条
     stick(add.rectangle(24, 20, 240, 20, UI_COLOR.panelDeep, 0.78).setOrigin(0, 0), DEPTH.HUD);
     this.hpFill = stick(add.rectangle(26, 22, HP_BAR_WIDTH, 16, 0x5fd97b, 0.95).setOrigin(0, 0), DEPTH.HUD + 1);
     this.hpText = stick(
@@ -80,26 +80,26 @@ export class HUD {
       DEPTH.HUD + 2,
     );
 
-    // 双武器槽
+  // 双武器槽
     this.slots = {
       primary: this.buildSlot(54),
       secondary: this.buildSlot(92),
     };
     this.slots.primary.highlight.setVisible(true);
 
-    // 右上：金币 / 材料 / 房间
+  // 右上：金币 / 材料 / 房间
     this.runText = stick(
       add.text(GAME_WIDTH - 24, 20, '', { fontFamily: FONT_FAMILY, fontSize: '16px', color: css(5) }).setOrigin(1, 0),
       DEPTH.HUD,
     );
 
-    // 波次提示
+  // 波次提示
     this.waveText = stick(
       add.text(GAME_WIDTH / 2, 108, '', { fontFamily: FONT_FAMILY, fontSize: '15px', color: css(4) }).setOrigin(0.5),
       DEPTH.HUD,
     );
 
-    // 房间名（大字，进出淡入淡出）
+  // 房间名（大字，进出淡入淡出）
     this.roomText = stick(
       add
         .text(GAME_WIDTH / 2, 300, '', { fontFamily: FONT_FAMILY, fontSize: '42px', color: css(6) })
@@ -108,7 +108,7 @@ export class HUD {
       DEPTH.TEXT,
     );
 
-    // Toast
+  // Toast
     this.toastText = stick(
       add.text(GAME_WIDTH / 2, GAME_HEIGHT - 168, '', { fontFamily: FONT_FAMILY, fontSize: '18px', color: css(9) })
         .setOrigin(0.5)
@@ -116,7 +116,7 @@ export class HUD {
       DEPTH.TEXT,
     );
 
-    // 交互提示
+  // 交互提示
     this.promptText = stick(
       add
         .text(GAME_WIDTH / 2, GAME_HEIGHT - 96, '', { fontFamily: FONT_FAMILY, fontSize: '16px', color: css(6) })
@@ -125,7 +125,7 @@ export class HUD {
       DEPTH.HUD,
     );
 
-    // 冲刺冷却（右下）
+  // 冲刺冷却（右下）
     stick(add.rectangle(GAME_WIDTH - 124, GAME_HEIGHT - 30, 100, 10, UI_COLOR.panelDeep, 0.8).setOrigin(0, 0), DEPTH.HUD);
     this.dashFill = stick(add.rectangle(GAME_WIDTH - 122, GAME_HEIGHT - 28, 96, 6, 0x3bd6c6, 0.95).setOrigin(0, 0), DEPTH.HUD + 1);
     stick(
@@ -133,7 +133,7 @@ export class HUD {
       DEPTH.HUD + 1,
     );
 
-    // Boss 血条
+  // Boss 血条
     const bossBg = stick(
       add.rectangle(GAME_WIDTH / 2, 34, BOSS_BAR_WIDTH + 4, 18, UI_COLOR.panelDeep, 0.85).setOrigin(0.5),
       DEPTH.HUD,
@@ -152,7 +152,7 @@ export class HUD {
     this.bossGroup = [bossBg, this.bossFill, this.bossName];
     this.setBossVisible(false);
 
-    // 事件订阅（全部成对在 destroy 里清理）
+  // 事件订阅（全部成对在 destroy 里清理）
     bus.on('player:stats', this.onPlayerStats, this);
     bus.on('player:dash', this.onDash, this);
     bus.on('weapon:state', this.onWeaponState, this);
@@ -168,7 +168,7 @@ export class HUD {
     bus.on('reward:offers', this.onRewardOffers, this);
   }
 
-  /* ============================ 对外 ============================ */
+ /* ============================ 对外 ============================ */
 
   showPrompt(text: string | null): void {
     if (text) {
@@ -189,7 +189,7 @@ export class HUD {
     if (this.toastTween) this.toastTween.stop();
   }
 
-  /* ============================ 事件 ============================ */
+ /* ============================ 事件 ============================ */
 
   private readonly onPlayerStats: EventHandler<'player:stats'> = (payload) => {
     const ratio = payload.maxHp > 0 ? Math.max(0, payload.hp / payload.maxHp) : 0;
@@ -210,10 +210,10 @@ export class HUD {
     this.applyWeaponState(payload);
   };
 
-  /**
-   * 首次装备时 P3 的 create() 还不发 weapon:state（那时实例没挂到槽位），
-   * 这里在 weapon:changed 之后主动从服务补一次，避免武器槽一直显示「—」（BUG-008）。
-   */
+ /**
+  * 首次装备时 create() 还不发 weapon:state（那时实例没挂到槽位），
+  * 这里在 weapon:changed 之后主动从服务补一次，避免武器槽一直显示「—」（008）。
+  */
   private readonly onWeaponChanged: EventHandler<'weapon:changed'> = (payload) => {
     this.slots.primary.highlight.setVisible(payload.slot === 'primary');
     this.slots.secondary.highlight.setVisible(payload.slot === 'secondary');
@@ -256,11 +256,11 @@ export class HUD {
       name = def.name;
       textureKey = def.textureKey;
     } catch {
-      /* 用 id 兜底 */
+   /* 用 id 兜底 */
     }
     slot.name.setText(name);
     slot.icon.setTexture(textureKey);
-    // COMBAT-01：等级 + 经验数值（原来只有一根进度条，看不出还差多少）
+  //：等级 + 经验数值（原来只有一根进度条，看不出还差多少）
     const star = payload.canEvolve ? ' ★' : '';
     const expText = payload.next > 0 ? `${payload.exp}/${payload.next}` : 'MAX';
     slot.level.setText(`Lv.${payload.level}${star} · ${expText}`);
@@ -270,10 +270,10 @@ export class HUD {
     this.renderCardIcons(slot, payload.cardIds);
   }
 
-  /**
-   * COMBAT-01：升级反馈。
-   * 效果百分比由 weapons.json/levelScaling 的相邻两级比出来，不在代码里写死数值。
-   */
+ /**
+  *：升级反馈。
+  * 效果百分比由 weapons.json/levelScaling 的相邻两级比出来，不在代码里写死数值。
+  */
   private readonly onWeaponLevel: EventHandler<'weapon:level'> = (payload) => {
     const slot = this.slots[payload.slot];
     const scaling = getLevelScaling();
@@ -285,7 +285,7 @@ export class HUD {
     try {
       name = getWeaponDef(payload.defId).name;
     } catch {
-      /* 用 id 兜底 */
+   /* 用 id 兜底 */
     }
     const effects = [`伤害 +${damagePct}%`];
     if (speedPct > 0) effects.push(`攻速 +${speedPct}%`);
@@ -306,7 +306,7 @@ export class HUD {
     try {
       name = getWeaponDef(payload.to).name;
     } catch {
-      /* 兜底 */
+   /* 兜底 */
     }
     this.toast(`进化 · ${name}`, PALETTE[9]);
     const slot = this.slots[payload.slot];
@@ -352,10 +352,10 @@ export class HUD {
   };
 
   private readonly onRewardOffers: EventHandler<'reward:offers'> = () => {
-    // 预留：奖励来源提示；当前由 RewardScene 自己画
+  // 预留：奖励来源提示；当前由 RewardScene 自己画
   };
 
-  /* ============================ 内部 ============================ */
+ /* ============================ 内部 ============================ */
 
   private buildSlot(y: number): WeaponSlotView {
     const add = this.scene.add;
@@ -412,7 +412,7 @@ export class HUD {
       try {
         color = rarityColor(getCardDef(cardId).rarity);
       } catch {
-        /* 兜底 */
+    /* 兜底 */
       }
       icon.setVisible(true).setFillStyle(hexToInt(color), 0.95);
     });

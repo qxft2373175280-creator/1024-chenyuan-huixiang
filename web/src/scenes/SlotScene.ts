@@ -1,7 +1,7 @@
 /**
- * 存档槽选择 / 存档管理（R2 + R3）
+ * 存档槽选择 / 存档管理
  *
- * mode = 'new'      → 只能选空槽建号（建完直接进教程）
+ * mode = 'new'   → 只能选空槽建号（建完直接进教程）
  * mode = 'continue' → 选已有存档进主界面（同时是「存档管理」入口：导出 / 导入）
  */
 import Phaser from 'phaser';
@@ -82,7 +82,7 @@ export class SlotScene extends Phaser.Scene {
     log.p1.info('存档槽界面', { mode: this.mode });
   }
 
-  /* ============================ 列表 ============================ */
+ /* ============================ 列表 ============================ */
 
   private renderRows(): void {
     this.rowLayer?.destroy(true);
@@ -130,7 +130,7 @@ export class SlotScene extends Phaser.Scene {
         layer.add(label(this, GAME_WIDTH - 330, top + ROW_HEIGHT / 2, '空存档', 15, PALETTE[3]));
       }
 
-      // 导出 / 导入（两种模式都提供，空槽也能导入）
+   // 导出 / 导入（两种模式都提供，空槽也能导入）
       if (!slot.empty) {
         this.addRowButton(layer, GAME_WIDTH - 150, top + 40, 130, 36, '导出', PALETTE[11], () => this.exportSlotFile(slot.index), 16);
       } else {
@@ -162,7 +162,7 @@ export class SlotScene extends Phaser.Scene {
     return `当前进度：第 ${slot.stage} 关 ｜ 最高：第 ${slot.highestStage || '-'} 关 ｜ 材料 ${slot.materials} ｜ 通关 ${slot.wins} 次 ｜ 失败 ${slot.losses} 次`;
   }
 
-  /* ============================ 行为 ============================ */
+ /* ============================ 行为 ============================ */
 
   private createAndStart(slotIndex: number): void {
     const data = createSlot(slotIndex);
@@ -172,7 +172,7 @@ export class SlotScene extends Phaser.Scene {
     }
     const save = getSaveSystem(this);
     save?.adoptSlot(slotIndex);
-    // 新号一定从教程开始（教程里会写 tutorialCompleted 并自动进第一关）
+  // 新号一定从教程开始（教程里会写 tutorialCompleted 并自动进第一关）
     log.p1.info('新游戏：进入教程', { slotIndex });
     this.scene.start(SCENE_KEYS.TUTORIAL);
   }
@@ -185,7 +185,7 @@ export class SlotScene extends Phaser.Scene {
     }
     const saveSystem = getSaveSystem(this);
     saveSystem?.adoptSlot(slotIndex);
-    // 旧档若还缺教程标记（比如从更早版本迁移），补一次「已完成」，避免进主界面还要过教程
+  // 旧档若还缺教程标记（比如从更早版本迁移），补一次「已完成」，避免进主界面还要过教程
     if (data.tutorial?.completed !== true && saveSystem) {
       completeTutorial(saveSystem, { skipped: true, rewardMaterials: 0 });
     }
@@ -254,7 +254,7 @@ export class SlotScene extends Phaser.Scene {
     });
   }
 
-  /* ============================ 弹层 / 提示 ============================ */
+ /* ============================ 弹层 / 提示 ============================ */
 
   private showConfirm(text: string, onConfirm: (() => void) | null): void {
     this.lastModalText = text;
@@ -311,12 +311,12 @@ export class SlotScene extends Phaser.Scene {
 
   private toastText: Phaser.GameObjects.Text | null = null;
 
-  /** 供验收脚本读取（DEV 按钮文案 / 列表状态） */
+ /** 供测试脚本读取（DEV 按钮文案 / 列表状态） */
   debugSlots(): SlotMeta[] {
     return listSlots();
   }
 
-  /** 供验收脚本读取：当前弹层文案与模式（导出/导入真实交互用例用） */
+ /** 供测试脚本读取：当前弹层文案与模式（导出/导入真实交互用例用） */
   debugUi(): { modal: string; mode: string; hasFileInput: boolean } {
     return { modal: this.lastModalText, mode: this.mode, hasFileInput: this.fileInput !== null };
   }

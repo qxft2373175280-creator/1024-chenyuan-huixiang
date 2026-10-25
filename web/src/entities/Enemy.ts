@@ -2,7 +2,7 @@
  * 敌人（P2）：chaser / shooter / charger / boss 四类 AI + 池化生成服务。
  *
  * 边界：敌人不自己扣血、不自己算暴击——伤害一律走 CombatSystem（契约 §6.3.1）。
- * AI 不做网格寻路：直冲 + 物理贴墙滑动（见《方案文档》§6.3.2）。
+ * AI 不做网格寻路：直冲 + 物理贴墙滑动（见《设计文档》§6.3.2）。
  */
 
 import Phaser from 'phaser';
@@ -36,7 +36,7 @@ import type { FxSystem } from '../vfx/Fx';
 
 /**
  * 敌人状态机。
- * `parry_window` / `attack_release` 是 PARRY-01 新增：蓄力→弹反窗口→蓄力锁定放招。
+ * `parry_window` / `attack_release` 是 新增：蓄力→弹反窗口→蓄力锁定放招。
  * `charge`（冲刺）与 `recover`（硬直）沿用既有实现。
  */
 type EnemyState = 'idle' | 'chase' | 'windup' | 'parry_window' | 'attack_release' | 'charge' | 'recover';
@@ -72,41 +72,41 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private phaseIndex = 0;
   private bossNextAttackAt = 0;
   private bossHpEmitAt = 0;
-  /* ---- COMBAT-01 卡墙脱困 ---- */
-  /** 位置采样锚点：窗口内位移不足阈值即视为卡住 */
+ /* ---- 卡墙脱困 ---- */
+ /** 位置采样锚点：窗口内位移不足阈值即视为卡住 */
   private readonly stuckAnchor: Vec2 = { x: 0, y: 0 };
   private stuckMs = 0;
-  /** 累计「没动」的时长（ms），到 UNSTUCK_WINDOW_MS 触发一次侧滑 */
+ /** 累计「没动」的时长（ms），到 UNSTUCK_WINDOW_MS 触发一次侧滑 */
   private stuckAccumMs = 0;
-  /** 触发过几次脱困（调试/验收读） */
+ /** 触发过几次脱困（调试/调试读） */
   private stuckEvents = 0;
-  /** 上一次侧滑开始时的位置 + 是否已经滑完（用来决定下一次往哪边滑） */
+ /** 上一次侧滑开始时的位置 + 是否已经滑完（用来决定下一次往哪边滑） */
   private readonly slideAnchor: Vec2 = { x: 0, y: 0 };
   private slideFinished = true;
-  /** 侧滑结束时刻（> now 时沿墙滑动） */
+ /** 侧滑结束时刻（> now 时沿墙滑动） */
   private slideUntil = 0;
-  /** 侧滑方向（+1 / -1，每次脱困换边，避免一直往同一侧顶墙） */
+ /** 侧滑方向（+1 / -1，每次脱困换边，避免一直往同一侧顶墙） */
   private slideDir = 1;
-  /** 本帧时间戳：给 moveToward 等无参工具用，避免每处都传 now */
+ /** 本帧时间戳：给 moveToward 等无参工具用，避免每处都传 now */
   private nowMs = 0;
-  /* ---- COMBAT-01 Boss 追踪弹 ---- */
+ /* ---- Boss 追踪弹 ---- */
   private bossHomingPending = false;
   private bossHomingAt = 0;
   private bossHomingDef: BossHomingDef | null = null;
-  /* ---- PARRY-01 弹反（蓄力）状态 ---- */
+ /* ---- 弹反（蓄力）状态 ---- */
   private parryRule: ParryEnemyRule | null = null;
   private parryTuning: ParryTuning | null = null;
-  /** 蓄力是否进行中（开启到「弹反成功 / 放招 / 取消」为止） */
+ /** 蓄力是否进行中（开启到「弹反成功 / 放招 / 取消」为止） */
   private parryActive = false;
-  /** 蓄力开始 / 窗口开始 / 窗口结束（= 蓄力结束）三个时间戳 */
+ /** 蓄力开始 / 窗口开始 / 窗口结束（= 蓄力结束）三个时间戳 */
   private parryStartAt = 0;
   private parryWindowAt = 0;
   private parryEndAt = 0;
-  /** 窗口开启只发一次事件 / 只闪一次 */
+ /** 窗口开启只发一次事件 / 只闪一次 */
   private parryWindowAnnounced = false;
-  /** 蓄力锁定后真正放招的时刻 */
+ /** 蓄力锁定后真正放招的时刻 */
   private parryReleaseAt = 0;
-  /** 放招瞬间的朝向（窗口期间持续更新，锁定后不再改） */
+ /** 放招瞬间的朝向（窗口期间持续更新，锁定后不再改） */
   private parryAimX = 0;
   private parryAimY = 0;
   private readonly warnRing: Phaser.GameObjects.Arc;
@@ -156,14 +156,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     };
   }
 
-  /** 死亡后归还对象池的回调（EnemyService 注入） */
+ /** 死亡后归还对象池的回调（EnemyService 注入） */
   onDespawn: (() => void) | null = null;
 
-  /**
-   * 提供给战斗系统的 IDamageable 视图。
-   * Phaser Sprite 自带 getCenter(output?, includeParent?) 与契约签名冲突，用适配器隔离；
-   * id 随池化复用动态变化，所以用 getter（见 docs/changes/P2-S4）。
-   */
+ /**
+  * 提供给战斗系统的 IDamageable 视图。
+  * Phaser Sprite 自带 getCenter(output?, includeParent?) 与契约签名冲突，用适配器隔离；
+  * id 随池化复用动态变化，所以用 getter。
+  */
   readonly damageable: IDamageable;
 
   get id(): string {
@@ -174,15 +174,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     return this.staticDef;
   }
 
-  /** 当前阶段序号（Boss 用；调试/验收读） */
+ /** 当前阶段序号（Boss 用；调试/调试读） */
   get phase(): number {
     return this.phaseIndex;
   }
 
-  /* ============================ 生成 / 回收 ============================ */
+ /* ============================ 生成 / 回收 ============================ */
 
   spawn(def: EnemyDef, x: number, y: number): void {
-    // R4：关卡难度缩放（训练场 / 教程没有运行态，倍率恒为 1）
+  // 关卡难度缩放（训练场 / 教程没有运行态，倍率恒为 1）
     const scaling = getStageScaling(this.sceneRef);
     this.staticDef = {
       ...def,
@@ -223,7 +223,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.bossHomingAt = 0;
     this.bossHomingDef = null;
 
-    // PARRY-01：每只怪自己决定是否开启弹反（数据在 parry.json）
+  //：每只怪自己决定是否开启弹反（数据在 parry.json）
     this.parryRule = this.parry.ruleFor(def.id);
     this.parryTuning = this.parryRule ? this.parry.tuningFor(def.id) : null;
     this.resetParryState();
@@ -245,7 +245,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.hideWarning();
   }
 
-  /** 回收：由对象池调用 */
+ /** 回收：由对象池调用 */
   despawn(): void {
     this.alive = false;
     this.cancelParry();
@@ -254,19 +254,19 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.clearTint();
   }
 
-  /* ============================ 每帧 AI ============================ */
+ /* ============================ 每帧 AI ============================ */
 
   override update(dtMs: number, nowMs: number, playerPos: Vec2, playerAlive: boolean): void {
     if (!this.alive) return;
     this.nowMs = nowMs;
     this.updateWarning(nowMs);
     if (!playerAlive) {
-      // 玩家死了：蓄力不再有意义，清圈避免残影（PARRY-01）
+   // 玩家死了：蓄力不再有意义，清圈避免残影
       if (this.parryActive) this.cancelParry();
       this.setVelocity(0, 0);
       return;
     }
-    // 蓄力弹反流程独占本帧（窗口→锁定→放招），不进入普通 AI
+  // 蓄力弹反流程独占本帧（窗口→锁定→放招），不进入普通 AI
     if (this.parryActive) {
       this.updateParry(nowMs, playerPos);
       this.tryContactDamage(nowMs, playerPos);
@@ -292,15 +292,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.tryContactDamage(nowMs, playerPos);
   }
 
-  /**
-   * 卡墙检测（COMBAT-01）：追击状态下 320ms 内位移不足 6px 就判定卡住，触发一次沿墙侧滑；
-   * 侧滑只是换一个速度方向，不瞬移、不穿墙，房间边界碰撞保持不变。
-   * 侧滑期间不再累计卡墙计时（否则会在滑动中途反向，表现为原地来回抖）。
-   */
+ /**
+  * 卡墙检测()：追击状态下 320ms 内位移不足 6px 就判定卡住，触发一次沿墙侧滑；
+  * 侧滑只是换一个速度方向，不瞬移、不穿墙，房间边界碰撞保持不变。
+  * 侧滑期间不再累计卡墙计时（否则会在滑动中途反向，表现为原地来回抖）。
+  */
   private trackStuck(dtMs: number, nowMs: number): void {
     if (nowMs < this.slideUntil) return;
     if (!this.slideFinished) {
-      // 一次侧滑刚结束：滑得动就继续同方向，滑不动才换边
+   // 一次侧滑刚结束：滑得动就继续同方向，滑不动才换边
       this.slideFinished = true;
       const moved = distance(this.x, this.y, this.slideAnchor.x, this.slideAnchor.y);
       if (moved < UNSTUCK_MIN_MOVE_PX) this.slideDir = this.slideDir === 1 ? -1 : 1;
@@ -332,12 +332,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     log.p2.debug('怪物卡墙脱困', { enemy: this.staticDef.id, dir: this.slideDir });
   }
 
-  /** 两点之间有没有墙（训练场/教程没有登记墙体 → 恒为 true） */
+ /** 两点之间有没有墙（训练场/教程没有登记墙体 → 恒为 true） */
   private canSee(target: Vec2): boolean {
     return !hasWallBetween(this.sceneRef, { x: this.x, y: this.y }, target);
   }
 
-  /* ============================ 伤害入口 ============================ */
+ /* ============================ 伤害入口 ============================ */
 
   isAlive(): boolean {
     return this.alive;
@@ -357,17 +357,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     return this.centerScratch;
   }
 
-  /**
-   * 受击：伤害数值已由 CombatSystem 结算好（含暴击/处决）。
-   * 这里只做扣血、闪白、击退、死亡。
-   */
+ /**
+  * 受击：伤害数值已由 CombatSystem 结算好（含暴击/处决）。
+  * 这里只做扣血、闪白、击退、死亡。
+  */
   applyDamage(spec: DamageSpec, sourcePos: Vec2): number {
     if (!this.alive) return 0;
     const amount = Math.max(0, spec.amount);
     if (amount <= 0) return 0;
 
-    // PARRY-01：先判弹反（用时间戳，不依赖本帧状态位），再扣血。
-    // 弹反成功只改状态，伤害照常结算（打断 ≠ 免伤）。
+  //：先判弹反（用时间戳，不依赖本帧状态位），再扣血。
+  // 弹反成功只改状态，伤害照常结算（打断 ≠ 免伤）。
     this.tryParry(spec, this.sceneRef.time.now);
 
     this.hp = Math.max(0, this.hp - amount);
@@ -394,14 +394,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     return amount;
   }
 
-  /* ============================ PARRY-01 蓄力弹反 ============================ */
+ /* ============================ 蓄力弹反 ============================ */
 
-  /** 该敌人是否开启弹反（调试/验收用） */
+ /** 该敌人是否开启弹反（调试/调试用） */
   hasParry(): boolean {
     return this.parryRule !== null;
   }
 
-  /** 弹反状态快照（调试面板与 headless 验收脚本读取） */
+ /** 弹反状态快照（调试面板与 headless 测试脚本读取） */
   parryDebug(): {
     active: boolean;
     state: EnemyState;
@@ -436,7 +436,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.parryAimY = 0;
   }
 
-  /** 用时间戳判定：窗口前命中 → 记一次「早出手」，窗口内命中 → 弹反成功 */
+ /** 用时间戳判定：窗口前命中 → 记一次「早出手」，窗口内命中 → 弹反成功 */
   private tryParry(spec: DamageSpec, nowMs: number): void {
     if (!this.parryRule || !this.parryActive) return;
     const weaponId = this.parry.weaponFromTags(spec.tags);
@@ -466,7 +466,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     log.p2.info('蓄力被打断', { enemy: this.staticDef.id, weaponId, stunMs, perfect });
   }
 
-  /** 蓄力开启：怪停步、普通预警圈让位给弹反圈 */
+ /** 蓄力开启：怪停步、普通预警圈让位给弹反圈 */
   private beginParryWindup(nowMs: number, attackRangePx: number): void {
     const tuning = this.parryTuning;
     if (!tuning) {
@@ -484,7 +484,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.parry.beginWindup(this, attackRangePx, tuning);
   }
 
-  /** 蓄力推进：收缩圈 → 窗口（白光） → 锁定 → 放招 */
+ /** 蓄力推进：收缩圈 → 窗口（白光） → 锁定 → 放招 */
   private updateParry(nowMs: number, playerPos: Vec2): void {
     const tuning = this.parryTuning;
     if (!tuning) {
@@ -500,7 +500,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       return;
     }
 
-    // 收缩进度在窗口开启前推满 1.0 → 圈正好贴到攻击范围时开始窗口
+  // 收缩进度在窗口开启前推满 1.0 → 圈正好贴到攻击范围时开始窗口
     const shrinkMs = Math.max(1, tuning.windupTotalMs - tuning.parryWindowMs);
     const progress = clamp((nowMs - this.parryStartAt) / shrinkMs, 0, 1);
 
@@ -519,7 +519,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (nowMs >= this.parryEndAt) this.beginRelease(nowMs);
   }
 
-  /** 窗口结束没能弹反：进入 200ms 的蓄力锁定，之后必然放招 */
+ /** 窗口结束没能弹反：进入 200ms 的蓄力锁定，之后必然放招 */
   private beginRelease(nowMs: number): void {
     const tuning = this.parryTuning;
     this.aiState = 'attack_release';
@@ -529,7 +529,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     log.p2.debug('蓄力锁定（窗口已过）', { enemy: this.staticDef.id, delayMs: tuning?.failReleaseDelayMs ?? 0 });
   }
 
-  /** 真正放招：锁定朝向、进入既有冲刺状态 */
+ /** 真正放招：锁定朝向、进入既有冲刺状态 */
   private releaseCharge(nowMs: number): void {
     this.parryActive = false;
     this.parryWindowAnnounced = false;
@@ -543,7 +543,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.parry.onAttackReleased(this);
   }
 
-  /** 取消蓄力（玩家死亡 / 敌人回收 / 切房）：清圈并复位 */
+ /** 取消蓄力（玩家死亡 / 敌人回收 / 切房）：清圈并复位 */
   private cancelParry(): void {
     this.parryActive = false;
     this.parryWindowAnnounced = false;
@@ -551,7 +551,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.parry.hide(this);
   }
 
-  /* ============================ chaser ============================ */
+ /* ============================ chaser ============================ */
 
   private updateChaser(nowMs: number, playerPos: Vec2): void {
     const def = this.staticDef;
@@ -574,7 +574,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (def.attack) {
       const reach = def.attack.aoeRadiusPx ?? def.attack.rangePx;
       const distanceToPlayer = distance(this.x, this.y, playerPos.x, playerPos.y);
-      // COMBAT-01：隔墙不起手（距离够也不算），避免贴墙站着穿墙打
+   //：隔墙不起手（距离够也不算），避免贴墙站着穿墙打
       if (distanceToPlayer <= reach && nowMs >= this.nextAttackAt && this.canSee(playerPos)) {
         this.beginWindup(nowMs, def.attack.windupMs, reach);
         this.nextAttackAt = nowMs + def.attack.cooldownMs;
@@ -582,7 +582,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  /* ============================ shooter ============================ */
+ /* ============================ shooter ============================ */
 
   private updateShooter(nowMs: number, playerPos: Vec2): void {
     const def = this.staticDef;
@@ -595,7 +595,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (nowMs >= this.stateUntil) {
         this.aiState = 'recover';
         this.stateUntil = nowMs + 120;
-        // COMBAT-01：开火瞬间再验一次视线（前摇期间玩家可能已经躲到墙后）
+    //：开火瞬间再验一次视线（前摇期间玩家可能已经躲到墙后）
         if (this.canSee(playerPos)) {
           this.shootAt(playerPos, attack.damage, attack.projectileSpeed ?? DATA_FALLBACK.ENEMY_PROJECTILE_SPEED);
         }
@@ -622,7 +622,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  /* ============================ charger ============================ */
+ /* ============================ charger ============================ */
 
   private updateCharger(nowMs: number, playerPos: Vec2): void {
     const def = this.staticDef;
@@ -638,7 +638,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.aiState = 'recover';
         this.stateUntil = nowMs + CHARGE_RECOVER_MS;
         body.setVelocity(0, 0);
-        // 蓄力放招后的硬直也发事件（弹反系统用它做统计/后续演出）
+    // 蓄力放招后的硬直也发事件（弹反系统用它做统计/后续演出）
         if (this.parryRule) this.parry.onRecovery(this, 'released');
       }
       return;
@@ -666,7 +666,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (attack) {
       const distanceToPlayer = distance(this.x, this.y, playerPos.x, playerPos.y);
       if (distanceToPlayer <= attack.rangePx && nowMs >= this.nextAttackAt && this.canSee(playerPos)) {
-        // PARRY-01：开启弹反的怪走「蓄力→窗口→锁定→放招」，其余保持原前摇
+    //：开启弹反的怪走「蓄力→窗口→锁定→放招」，其余保持原前摇
         if (this.parryRule) this.beginParryWindup(nowMs, attack.rangePx);
         else this.beginWindup(nowMs, attack.windupMs, def.radiusPx + 16);
         this.nextAttackAt = nowMs + attack.cooldownMs;
@@ -674,7 +674,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  /* ============================ boss ============================ */
+ /* ============================ boss ============================ */
 
   private updateBoss(nowMs: number, playerPos: Vec2): void {
     const def = this.staticDef;
@@ -695,7 +695,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       bus.emit('boss:hp', { hp: this.hp, maxHp: this.maxHpValue });
     }
 
-    // COMBAT-01：追踪弹预警期，Boss 停步站桩（玩家有明确反应窗口）
+  //：追踪弹预警期，Boss 停步站桩（玩家有明确反应窗口）
     if (this.bossHomingPending) {
       this.setVelocity(0, 0);
       if (nowMs >= this.bossHomingAt) {
@@ -707,7 +707,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       return;
     }
 
-    // 冲锋 / 前摇 / 硬直沿用 charger 的状态机
+  // 冲锋 / 前摇 / 硬直沿用 charger 的状态机
     if (this.aiState === 'windup' || this.aiState === 'charge' || this.aiState === 'recover') {
       this.updateCharger(nowMs, playerPos);
       return;
@@ -746,9 +746,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const damageMul = phase.damageMul ?? DATA_FALLBACK.NO_MULTIPLIER;
 
     if (choice === 'charge') {
-      // COMBAT-01：隔墙不起手（否则会隔着墙开冲锋）
+   //：隔墙不起手（否则会隔着墙开冲锋）
       if (!this.canSee(playerPos)) return;
-      // 交给 updateCharger 的 windup → charge 状态机（开启弹反的怪走 PARRY-01 流程）
+   // 交给 updateCharger 的 windup → charge 状态机（开启弹反的怪走 流程）
       if (this.parryRule) {
         this.beginParryWindup(nowMs, def.attack?.rangePx ?? def.radiusPx + 20);
       } else {
@@ -793,7 +793,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
           'physical',
           DATA_FALLBACK.ENEMY_SLAM_KNOCKBACK,
         );
-        // COMBAT-01：玩家躲到墙后不吃砸地伤害
+    //：玩家躲到墙后不吃砸地伤害
         if (this.canSee(playerPos)) {
           this.combat.circleArea({ x: this.x, y: this.y }, radius, spec, 'player');
         }
@@ -806,7 +806,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (summonDef) {
       for (let index = 0; index < summonDef.count; index += 1) {
         const angle = (TAU * index) / summonDef.count;
-        // COMBAT-01：走 spawnMinion（受同屏/总量上限约束），不再直连 spawn
+    //：走 spawnMinion（受同屏/总量上限约束），不再直连 spawn
         this.summon(
           summonDef.enemyId,
           this.x + Math.cos(angle) * (this.width * 0.9),
@@ -816,7 +816,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  /** COMBAT-01：发射一轮追踪弹（数量/速度/寿命/追踪时长全部来自 enemies.json） */
+ /**：发射一轮追踪弹（数量/速度/寿命/追踪时长全部来自 enemies.json） */
   private fireBossHoming(playerPos: Vec2): void {
     const homing = this.bossHomingDef;
     if (!homing) return;
@@ -847,7 +847,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.fx.shake(160, 0.01);
   }
 
-  /** 追踪弹预警：Boss 停步、变色、出预警圈（半径/时长全部来自 enemies.json） */
+ /** 追踪弹预警：Boss 停步、变色、出预警圈（半径/时长全部来自 enemies.json） */
   private beginHomingTelegraph(nowMs: number, homing: BossHomingDef): void {
     this.bossHomingDef = homing;
     this.bossHomingPending = true;
@@ -860,7 +860,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     bus.emit('boss:telegraph', { kind: 'homing', at: { x: this.x, y: this.y }, windupMs: homing.windupMs });
   }
 
-  /** COMBAT-01 验收钩子：强制 Boss 起一次追踪弹预警（不改变正式随机出招逻辑） */
+ /** 调试钩子：强制 Boss 起一次追踪弹预警（不改变正式随机出招逻辑） */
   debugStartHoming(): boolean {
     const phases = this.staticDef.phases ?? [];
     const phase = phases[this.phaseIndex] ?? phases[0];
@@ -870,7 +870,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     return true;
   }
 
-  /** COMBAT-01：Boss 追踪弹状态快照（调试 / 验收脚本） */
+ /**：Boss 追踪弹状态快照（调试 / 测试脚本） */
   bossHomingDebug(): { pending: boolean; at: number; windupMs: number; count: number; homingMs: number } {
     const homing = this.bossHomingDef;
     return {
@@ -882,7 +882,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     };
   }
 
-  /* ============================ 动作小工具 ============================ */
+ /* ============================ 动作小工具 ============================ */
 
   private moveToward(target: Vec2, speed: number): void {
     const body = this.body as Phaser.Physics.Arcade.Body;
@@ -890,7 +890,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const dy = target.y - this.y;
     const length = Math.hypot(dx, dy) || 1;
     if (this.nowMs > 0 && this.nowMs < this.slideUntil) {
-      // COMBAT-01 脱困：把「直冲」换成垂直方向的「沿墙滑动」，速度大小不变
+   // 脱困：把「直冲」换成垂直方向的「沿墙滑动」，速度大小不变
       const nx = dx / length;
       const ny = dy / length;
       body.setVelocity(-ny * speed * this.slideDir, nx * speed * this.slideDir);
@@ -918,7 +918,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   private performSlam(damage: number, radius: number, playerPos: Vec2): void {
-    // COMBAT-01：隔墙不结算（预警圈照常显示，只是打不到墙后的人）
+  //：隔墙不结算（预警圈照常显示，只是打不到墙后的人）
     const spec = this.buildSpec(damage, 'physical', 150);
     if (this.canSee(playerPos)) {
       this.combat.circleArea({ x: this.x, y: this.y }, radius, spec, 'player');
@@ -944,7 +944,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (def.contactDamage <= 0) return;
     const reach = def.radiusPx + PLAYER_BODY_RADIUS + HIT_PAD_PX * 0.5;
     if (distance(this.x, this.y, playerPos.x, playerPos.y) > reach) return;
-    // COMBAT-01：贴墙对位（隔一格墙）不算接触伤害
+  //：贴墙对位（隔一格墙）不算接触伤害
     if (!this.canSee(playerPos)) return;
     if (nowMs < this.nextContactAt) return;
     this.nextContactAt = nowMs + def.contactCooldownMs;
@@ -956,7 +956,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     return { amount, element, knockback, tags: ['enemy'] };
   }
 
-  /* ============================ 预警圈 ============================ */
+ /* ============================ 预警圈 ============================ */
 
   private showWarning(radius: number, until: number): void {
     this.warnRing
@@ -988,7 +988,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.warnRing.setActive(false).setVisible(false).setAlpha(0);
   }
 
-  /** COMBAT-01：AI 状态快照（墙边/角落脱困、隔墙判定都用它断言） */
+ /**：AI 状态快照（墙边/角落脱困、隔墙判定都用它断言） */
   aiDebug(): {
     id: string;
     defId: string;
@@ -1019,12 +1019,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     };
   }
 
-  /** COMBAT-01：从这只怪看向目标点，中间有没有墙 */
+ /**：从这只怪看向目标点，中间有没有墙 */
   lineOfSightTo(target: Vec2): boolean {
     return this.canSee(target);
   }
 
-  /* ============================ 死亡 ============================ */
+ /* ============================ 死亡 ============================ */
 
   private die(): void {
     if (!this.alive) return;
@@ -1056,7 +1056,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.hideWarning();
     this.parryActive = false;
     this.parry.hide(this);
-    // 场景销毁后 body 已不存在，setVelocity 会抛错（BUG-003 家族）
+  // 场景销毁后 body 已不存在，setVelocity 会抛错（003 家族）
     if (body) this.setVelocity(0, 0);
     this.aiState = 'idle';
   }
@@ -1078,7 +1078,7 @@ export class EnemyService {
     this.pool = new ObjectPool<Enemy>(
       () => {
         const enemy = new Enemy(scene, combat, fx, parry, (enemyId, x, y) => {
-          // COMBAT-01：Boss 召唤也走限流入口，避免绕过同屏/总量上限
+     //：Boss 召唤也走限流入口，避免绕过同屏/总量上限
           this.spawnMinion(enemyId, x, y);
         });
         enemy.onDespawn = () => this.release(enemy);
@@ -1102,17 +1102,17 @@ export class EnemyService {
     this.active.push(enemy);
     this.combat.registerTarget(enemy.damageable);
     if (def.isBoss) this.bossId = enemy.id;
-    // 图鉴：刷到即「已遭遇」（BUG-004）
+  // 图鉴：刷到即「已遭遇」（004）
     tryGetService(this.sceneRef, 'save')?.markSeen('enemy', def.id);
     bus.emit('enemy:spawned', { enemyId: def.id, boss: def.isBoss === true });
     return enemy.id;
   }
 
-  /**
-   * COMBAT-01：Boss 房小怪统一入口。
-   * 有 registry 限流状态时按「同屏上限 / 总量上限」拦截；没有（教程、训练场）就直接生成。
-   * Boss 自己不计入小怪数，所以存活数要减掉 Boss。
-   */
+ /**
+  *：Boss 房小怪统一入口。
+  * 有 registry 限流状态时按「同屏上限 / 总量上限」拦截；没有（教程、训练场）就直接生成。
+  * Boss 自己不计入小怪数，所以存活数要减掉 Boss。
+  */
   spawnMinion(defId: string, xPx: number, yPx: number): string {
     const state = this.sceneRef.registry.get(BOSS_MINION_KEY) as BossMinionState | undefined;
     if (state) {
@@ -1123,7 +1123,7 @@ export class EnemyService {
     return this.spawn(defId, xPx, yPx);
   }
 
-  /** 同屏小怪数（不含 Boss） */
+ /** 同屏小怪数（不含 Boss） */
   minionAliveCount(): number {
     let count = 0;
     for (const enemy of this.active) {
@@ -1134,7 +1134,7 @@ export class EnemyService {
     return count;
   }
 
-  /** COMBAT-01：全部存活敌人的 AI 快照（验收脚本读）+ Boss 追踪弹快照 */
+ /**：全部存活敌人的 AI 快照（测试脚本读）+ Boss 追踪弹快照 */
   debugEnemies(): {
     enemies: ReturnType<Enemy['aiDebug']>[];
     boss: (ReturnType<Enemy['bossHomingDebug']> & { id: string; phaseIndex: number }) | null;
@@ -1169,19 +1169,19 @@ export class EnemyService {
     return boss && boss.isAlive() ? this.bossId : null;
   }
 
-  /** COMBAT-01：拿到存活 Boss 实例（验收脚本触发追踪弹用） */
+ /**：拿到存活 Boss 实例（测试脚本触发追踪弹用） */
   getBoss(): Enemy | null {
     if (!this.bossId) return null;
     const boss = this.active.find((enemy) => enemy.id === this.bossId);
     return boss && boss.isAlive() ? boss : null;
   }
 
-  /** 房间系统（P4）用它加「敌人 vs 墙」的碰撞 */
+ /** 房间系统（P4）用它加「敌人 vs 墙」的碰撞 */
   getGroup(): Phaser.Physics.Arcade.Group {
     return this.group;
   }
 
-  /** 调试 / 验收脚本用：当前存活敌人实例（只读快照） */
+ /** 调试 / 测试脚本用：当前存活敌人实例（只读快照） */
   getActive(): readonly Enemy[] {
     return this.active;
   }
@@ -1209,7 +1209,7 @@ export class EnemyService {
     this.pool.release(enemy);
   }
 
-  /** 轻微互推：避免敌人叠成一坨（§6.3.2） */
+ /** 轻微互推：避免敌人叠成一坨（§6.3.2） */
   private applySeparation(): void {
     const count = this.active.length;
     if (count < 2) return;

@@ -1,5 +1,5 @@
 /**
- * 通用对象池（P2，《方案文档》§6.3.5）。
+ * 通用对象池（P2，《设计文档》§6.3.5）。
  *
  * 只允许预分配：热路径里禁止 new，弹道 / 飘字 / 特效 / 敌人全部走池。
  */
@@ -10,7 +10,7 @@ export interface Pool<T> {
   release(item: T): void;
   activeCount(): number;
   freeCount(): number;
-  /** 回收所有活跃对象并清空空闲列表（SHUTDOWN 时调用） */
+ /** 回收所有活跃对象并清空空闲列表（SHUTDOWN 时调用） */
   clear(): void;
 }
 
@@ -47,7 +47,7 @@ export class ObjectPool<T> implements Pool<T> {
     return this.free.length;
   }
 
-  /** 一次性回收全部活跃对象 */
+ /** 一次性回收全部活跃对象 */
   releaseAll(): void {
     for (const item of [...this.active]) {
       this.release(item);

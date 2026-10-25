@@ -1,6 +1,6 @@
 /**
  * 纯数学 / 格式化工具（无副作用，可被任何层引用）
- * 负责人：P1
+ * 
  */
 export { chance, createRng, hashString, pickOne, randInt, randRange, rng, shuffle } from './rng';
 

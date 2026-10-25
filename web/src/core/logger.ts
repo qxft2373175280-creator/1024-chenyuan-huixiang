@@ -1,6 +1,6 @@
 /**
  * 分级日志 —— 生产构建只保留 warn / error
- * 负责人：P1
+ * 
  * 用法：log.p2.info('enemy died', { id })
  */
 const isDev: boolean = import.meta.env.DEV;

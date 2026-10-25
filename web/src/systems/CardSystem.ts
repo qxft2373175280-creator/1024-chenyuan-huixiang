@@ -35,7 +35,7 @@ const SLOT_ORDER = ['primary', 'secondary'] as const;
  */
 export class CardSystem implements ICardService {
   private readonly scene: Phaser.Scene;
-  /** uid → 卡牌 params 合并结果；WeaponStats 里没有 params 字段，由这里按实例保存 */
+ /** uid → 卡牌 params 合并结果；WeaponStats 里没有 params 字段，由这里按实例保存 */
   private readonly paramsByUid = new Map<string, Record<string, number>>();
 
   constructor(scene: Phaser.Scene) {
@@ -46,11 +46,11 @@ export class CardSystem implements ICardService {
     return getCardDef(id);
   }
 
-  /**
-   * §7.3.2 数值结算管线：
-   * base → 等级成长 → 锻造被动 → 卡牌 add → mul → set → 封顶 → flags/params。
-   * 进化后的 defId 已由 UpgradeSystem 换好，这里只读当前 def。
-   */
+ /**
+  * §7.3.2 数值结算管线：
+  * base → 等级成长 → 锻造被动 → 卡牌 add → mul → set → 封顶 → flags/params。
+  * 进化后的 defId 已由 UpgradeSystem 换好，这里只读当前 def。
+  */
   computeStats(inst: WeaponInstance): WeaponStats {
     const def = getWeaponDef(inst.defId);
     const scaling = getLevelScaling();
@@ -88,7 +88,7 @@ export class CardSystem implements ICardService {
     for (const cardId of inst.cardIds) {
       const card = getCardDef(cardId);
       const applicable = card.modifiers.filter((mod) => this.modifierApplies(mod, def.category));
-      // 没有任何一条 modifier 适配当前武器 → 整张卡跳过（含 flags/params）
+   // 没有任何一条 modifier 适配当前武器 → 整张卡跳过（含 flags/params）
       if (applicable.length === 0) continue;
       modifiers.push(...applicable);
       for (const flag of card.flags ?? []) {
@@ -131,7 +131,7 @@ export class CardSystem implements ICardService {
     return Object.freeze(snapshot);
   }
 
-  /** 供 WeaponSystem.buildSpec 读取合并后的 params（同名取最后一张卡） */
+ /** 供 WeaponSystem.buildSpec 读取合并后的 params（同名取最后一张卡） */
   getParams(inst: WeaponInstance): Record<string, number> {
     return this.paramsByUid.get(inst.uid) ?? {};
   }
@@ -152,11 +152,11 @@ export class CardSystem implements ICardService {
     return { ok: true };
   }
 
-  /**
-   * 抽卡。epicBias 是 P3 内部扩展参数（精英房用），接口调用方只用前 3 个参数。
-   * 候选规则：已解锁 → 适配「还有空卡槽的任一武器」类别 → 未装或可叠加。
-   * 用两把武器的类别并集而不是只看当前武器，避免主手满槽时三选一/商店发不出去的卡。
-   */
+ /**
+  * 抽卡。epicBias 是 P3 内部扩展参数（精英房用），接口调用方只用前 3 个参数。
+  * 候选规则：已解锁 → 适配「还有空卡槽的任一武器」类别 → 未装或可叠加。
+  * 用两把武器的类别并集而不是只看当前武器，避免主手满槽时三选一/商店发不出去的卡。
+  */
   rollOffers(
     count: number,
     installedCardIds: readonly string[],
@@ -207,8 +207,8 @@ export class CardSystem implements ICardService {
 
   describe(card: CardDef): string {
     if (!card.description.includes('{value}')) return card.description;
-    // 文案是「{value}%」时优先取百分比类 target，否则取第一条非百分比 target；
-    // 避免「暴击率 +{value}%」误用第一条 critMult 之类的非百分比数值。
+  // 文案是「{value}%」时优先取百分比类 target，否则取第一条非百分比 target；
+  // 避免「暴击率 +{value}%」误用第一条 critMult 之类的非百分比数值。
     const isPercentText = card.description.includes('{value}%');
     const candidates = isPercentText
       ? card.modifiers.filter((mod) => PERCENT_TARGETS.includes(mod.target))
@@ -235,7 +235,7 @@ export class CardSystem implements ICardService {
 
   private weightOf(card: CardDef, epicBias: boolean): number {
     const base = Math.max(0, card.weight);
-    // 精英房「稀有度加权 epic」：§7.3.5 未给具体倍率，这里统一 ×2（占位，策划可改）
+  // 精英房「稀有度加权 epic」：§7.3.5 未给具体倍率，这里统一 ×2（占位，策划可改）
     return epicBias && card.rarity === 'epic' ? base * 2 : base;
   }
 }

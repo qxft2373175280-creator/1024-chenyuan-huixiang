@@ -1,13 +1,13 @@
 /**
- * 新手教程（TUTORIAL-01）
+ * 新手教程()
  *
  * 流程：新游戏 → 本场景（5 步教学）→ 标记 tutorialCompleted → 自动进入第一关（GameScene）。
  *
  * 设计要点：
- *  - 所有提示文案 / 超时 / 敌人 / 卡牌 / 奖励 / 降级参数来自 `data/tutorial.json`；
- *  - 服用的都是正式系统（installCombat / installBuild / installRun + 真弹反系统 + 真三选一），
- *    所以教程里学到的手感与正式关卡一致；
- *  - 教程进度写存档（`systems/TutorialProgress`），不放全局单例，方便以后接多存档。
+ * - 所有提示文案 / 超时 / 敌人 / 卡牌 / 奖励 / 降级参数来自 `data/tutorial.json`；
+ * - 服用的都是正式系统（installCombat / installBuild / installRun + 真弹反系统 + 真三选一），
+ *  所以教程里学到的手感与正式关卡一致；
+ * - 教程进度写存档（`systems/TutorialProgress`），不放全局单例，方便以后接多存档。
  */
 
 import Phaser from 'phaser';
@@ -118,7 +118,7 @@ export class TutorialScene extends Phaser.Scene {
     };
   }
 
-  /* ============================ 生命周期 ============================ */
+ /* ============================ 生命周期 ============================ */
 
   create(data: { resumeStep?: number } = {}): void {
     this.config = getTutorialConfig();
@@ -153,7 +153,7 @@ export class TutorialScene extends Phaser.Scene {
     this.buildHudTexts();
     this.bindEvents();
 
-    // 教程里不显示「金币/房间」这类正式进度，只留血量、武器、卡槽、冲刺，便于讲卡槽变化
+  // 教程里不显示「金币/房间」这类正式进度，只留血量、武器、卡槽、冲刺，便于讲卡槽变化
     tryGetService(this, 'run')?.start(1);
     getService(this, 'audio').playBgm('bgm_dungeon');
 
@@ -163,7 +163,7 @@ export class TutorialScene extends Phaser.Scene {
     const resumeStep = Number.isFinite(data?.resumeStep) ? Math.max(0, Math.floor(Number(data.resumeStep))) : 0;
     log.p4.info('教程场景就绪', { layout: this.config.layoutId, resumeStep });
     if (import.meta.env.DEV) {
-      // 验收脚本钩子：只读快照（与 window.__game 一样只在 DEV 存在）
+   // 测试脚本钩子：只读快照（与 window.__game 一样只在 DEV 存在）
       (window as unknown as { __tutorial?: () => Record<string, unknown> }).__tutorial = () => this.debugSnapshot();
     }
     this.time.delayedCall(200, () => this.startStep(resumeStep));
@@ -202,14 +202,14 @@ export class TutorialScene extends Phaser.Scene {
     this.updateArrow();
   }
 
-  /** 超时提示：移动步骤看「多久没动」，其它步骤看「本步开始多久」 */
+ /** 超时提示：移动步骤看「多久没动」，其它步骤看「本步开始多久」 */
   private shouldShowIdleHint(step: TutorialStepDef): boolean {
     const now = this.time.now;
     const reference = step.kind === 'move' ? this.runtime.lastMoveAt : this.stepStartedAt;
     return now - reference >= step.timeoutMs;
   }
 
-  /* ============================ UI ============================ */
+ /* ============================ UI ============================ */
 
   private buildHudTexts(): void {
     const cx = GAME_WIDTH / 2;
@@ -338,7 +338,7 @@ export class TutorialScene extends Phaser.Scene {
     this.physics.resume();
   }
 
-  /* ============================ 步骤驱动 ============================ */
+ /* ============================ 步骤驱动 ============================ */
 
   private startStep(index: number): void {
     if (this.finished) return;
@@ -439,7 +439,7 @@ export class TutorialScene extends Phaser.Scene {
       }
     }
     if (step.kind === 'parry') {
-      // 冲锋兽要走到玩家身边才会开始蓄力，给它一点时间即可（AI 自己会走过来）
+   // 冲锋兽要走到玩家身边才会开始蓄力，给它一点时间即可（AI 自己会走过来）
       log.p4.info('弹反教学：已刷冲锋兽', { count: this.runtime.enemyIds.length });
     }
   }
@@ -473,7 +473,7 @@ export class TutorialScene extends Phaser.Scene {
       this.turretNextShotAt = now + this.turretInterval;
       this.fireTutorialShot(step);
     }
-    // 被击中的次数从血量变化推（教程里只有弹道会扣血）
+  // 被击中的次数从血量变化推（教程里只有弹道会扣血）
     const hp = getService(this, 'player').getHp();
     if (hp.hp < this.lastPlayerHp) {
       this.dashHits += 1;
@@ -493,11 +493,11 @@ export class TutorialScene extends Phaser.Scene {
   private updateParry(): void {
     if (this.finished) return;
     if (this.runtime.enemyIds.length === 0) return;
-    // 玩家把冲锋兽打死了 → 补一只继续练（弹反成功由事件推进，不在这里判定）
+  // 玩家把冲锋兽打死了 → 补一只继续练（弹反成功由事件推进，不在这里判定）
     if (this.allStepEnemiesDead()) this.respawnParryEnemy();
   }
 
-  /* ============================ 各步骤的敌人/弹道 ============================ */
+ /* ============================ 各步骤的敌人/弹道 ============================ */
 
   private fireTutorialShot(step: TutorialDashStep): void {
     const turret = this.turretSprite;
@@ -525,7 +525,7 @@ export class TutorialScene extends Phaser.Scene {
     });
   }
 
-  /* ============================ 完成 / 跳过 ============================ */
+ /* ============================ 完成 / 跳过 ============================ */
 
   private completeStep(): void {
     if (this.finished) return;
@@ -581,7 +581,7 @@ export class TutorialScene extends Phaser.Scene {
     this.scene.start(SCENE_KEYS.GAME, { fresh: true, stage: 1, replay: false });
   }
 
-  /* ============================ 事件 ============================ */
+ /* ============================ 事件 ============================ */
 
   private bindEvents(): void {
     bus.on('enemy:died', this.onEnemyDied, this);
@@ -593,7 +593,7 @@ export class TutorialScene extends Phaser.Scene {
   }
 
   private readonly onEnemyDied: () => void = () => {
-    // 步骤推进统一在 update 里按「步骤敌人是否都死了」判断，这里只留事件订阅位置
+  // 步骤推进统一在 update 里按「步骤敌人是否都死了」判断，这里只留事件订阅位置
   };
 
   private readonly onParried: (payload: { enemyId: string }) => void = () => {
@@ -644,7 +644,7 @@ export class TutorialScene extends Phaser.Scene {
     this.time.delayedCall(600, () => this.scene.restart({ resumeStep: step }));
   };
 
-  /* ============================ 三选一（步骤 4） ============================ */
+ /* ============================ 三选一（步骤 4） ============================ */
 
   private openTutorialReward(step: TutorialCardsStep): void {
     if (this.pendingRewardOffer) return;
@@ -707,7 +707,7 @@ export class TutorialScene extends Phaser.Scene {
     this.completeStep();
   }
 
-  /* ============================ 工具 ============================ */
+ /* ============================ 工具 ============================ */
 
   private trackPlayerMovement(): void {
     const pos = getService(this, 'player').getPosition();
@@ -727,7 +727,7 @@ export class TutorialScene extends Phaser.Scene {
     const aliveIds = new Set(active.filter((enemy) => enemy.isAlive()).map((enemy) => enemy.id));
     const aliveCount = this.runtime.enemyIds.filter((id) => aliveIds.has(id)).length;
     if (aliveCount === 0) return true;
-    // 兜底：有些敌人可能已被回收（不在 active 列表里）
+  // 兜底：有些敌人可能已被回收（不在 active 列表里）
     return enemySvc.aliveCount() === 0;
   }
 
@@ -787,9 +787,9 @@ export class TutorialScene extends Phaser.Scene {
     log.p4.info('教程场景清理完成');
   }
 
-  /* ============================ 调试 / 验收钩子 ============================ */
+ /* ============================ 调试 / 调试钩子 ============================ */
 
-  /** 给 headless 验收脚本用的只读快照（DEV 构建才挂到 window） */
+ /** 给 headless 测试脚本用的只读快照（DEV 构建才挂到 window） */
   debugSnapshot(): Record<string, unknown> {
     const step = this.config.steps[this.stepIndex];
     const player = getService(this, 'player');

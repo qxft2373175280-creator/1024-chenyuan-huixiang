@@ -1,6 +1,6 @@
 /**
  * 数据层唯一入口 —— 类型化读取 + 启动自检
- * 负责人：P1
+ * 
  *
  * 规则：业务代码不要直接 import *.json，一律走本文件的访问器（失败时报出可读错误）。
  */
@@ -148,22 +148,22 @@ export function getLevelScaling(): LevelScaling {
   return bundle.weapons.levelScaling;
 }
 
-/** PARRY-01：弹反数值与规则（独立文件，契约外增量） */
+/**：弹反数值与规则（独立文件，契约外增量） */
 export function getParryConfig(): ParryFileDef {
   return bundle.parry;
 }
 
-/** TUTORIAL-01：新手教程配置（独立文件，契约外增量） */
+/**：新手教程配置（独立文件，契约外增量） */
 export function getTutorialConfig(): TutorialFileDef {
   return bundle.tutorial;
 }
 
-/** R2：主界面功能指引 */
+/** 主界面功能指引 */
 export function getMenuGuide(): MenuGuideFileDef {
   return bundle.guide;
 }
 
-/** R4/R5：关卡难度曲线 */
+/** / 关卡难度曲线 */
 export function getStagesConfig(): StagesFileDef {
   return bundle.stages;
 }

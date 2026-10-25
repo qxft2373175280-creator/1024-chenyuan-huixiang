@@ -1,5 +1,5 @@
 /**
- * 主界面（R2/R4）
+ * 主界面
  *
  * 入口：开始游戏（显示第几关）/ 历史关卡 / 装备·卡牌 / 锻造台 / 存档管理 / 帮助
  * 首次进入会走一遍「功能指引」（可跳过，进设置里的「帮助」可重看），状态存 `save.guideSeen`。
@@ -136,11 +136,11 @@ export class MenuScene extends Phaser.Scene {
     });
     keyboard?.on('keydown-ESC', () => this.scene.start(SCENE_KEYS.TITLE));
 
-    // 首次进主界面：走一遍功能指引
+  // 首次进主界面：走一遍功能指引
     if (data.guideSeen !== true) {
       this.time.delayedCall(280, () => this.startGuide());
     }
-    // 记录最后游玩时间（存档槽列表要显示）
+  // 记录最后游玩时间（存档槽列表要显示）
     data.lastPlayedAt = Date.now();
     this.save.commit();
     if (import.meta.env.DEV) {
@@ -173,7 +173,7 @@ export class MenuScene extends Phaser.Scene {
     }
   }
 
-  /* ============================ 功能指引 ============================ */
+ /* ============================ 功能指引 ============================ */
 
   private startGuide(): void {
     this.guideIndex = 0;
@@ -233,7 +233,7 @@ export class MenuScene extends Phaser.Scene {
     log.p4.info('主界面指引已完成/跳过');
   }
 
-  /* ============================ 调试钩子 ============================ */
+ /* ============================ 调试钩子 ============================ */
 
   debugMenu(): Record<string, unknown> {
     const data = this.save.get();

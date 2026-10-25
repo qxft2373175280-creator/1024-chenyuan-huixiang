@@ -1,6 +1,6 @@
 /**
  * 数据校验规则 —— 运行时（BootScene）与 CLI（scripts/validate-data.mjs）共用同一套规则
- * 负责人：P1
+ * 
  *
  * 说明：本文件必须保持「可在 Node 中直接 import」——只允许 type-only import，
  * 不使用 enum / namespace / 参数属性等不可擦除语法（Node 类型剥离依赖这一点）。
@@ -59,8 +59,8 @@ function checkUnique(errors: string[], file: string, ids: string[]): void {
 /**
  * 布局校验。
  * `usage` 描述引用该布局的房间情况：
- *  - `total`：引用该布局的房间数；
- *  - `allSpawnless`：所有引用它的房间都没有波次（shop / treasure / boss 这类无刷怪房）。
+ * - `total`：引用该布局的房间数；
+ * - `allSpawnless`：所有引用它的房间都没有波次（shop / treasure / boss 这类无刷怪房）。
  *
  * 关于 `layout_ring`：该布局按设计就没有刷怪点 S（只给无波次房用，当前是商店房 room_04），
  * 以前会输出 △ 警告，容易被当成缺陷。按 2026-10-25 的决定：**保留无刷怪点设计**，
@@ -101,13 +101,13 @@ function checkLayout(
   if (players === 0 && bosses === 0) errors.push(`${path}: 缺少玩家出生点 P 或 Boss 出生点 B`);
   if (players > 1) errors.push(`${path}: 玩家出生点 P 只能有 1 个`);
   if (bosses > 1) errors.push(`${path}: Boss 出生点 B 只能有 1 个`);
-  // §9.5 的本意是「一个布局只承担一种出生点」；P4 用同一布局同时承担精英房与 Boss 房，
-  // 因此这里降级为提示（不阻塞 CI），是否拆布局由策划在 D5 决定（见待办事项 DEC/DEV）。
+ // §9.5 的本意是「一个布局只承担一种出生点」；当前用同一布局同时承担精英房与 Boss 房，
+ // 因此这里降级为提示（不阻塞 CI）。（是否拆分布局，由玩法设计后续决定）
   if (players === 1 && bosses === 1) {
     warnings.push(`${path}: 同时存在 P 与 B（§9.5 建议「精英房 / Boss 房」分布局；当前实现共用布局）`);
   }
   if (spawns === 0) {
-    // 只有「被无波次房（shop / treasure / boss）专用」时才允许没有 S；被战斗房引用仍然报警告
+  // 只有「被无波次房（shop / treasure / boss）专用」时才允许没有 S；被战斗房引用仍然报警告
     if (usage.total > 0 && usage.allSpawnless) {
       infos.push(`${path}：Boss/无波次房布局，允许没有普通刷怪点 S`);
     } else {
@@ -118,7 +118,7 @@ function checkLayout(
 }
 
 /**
- * 弹反数值校验（PARRY-01）。`overrides` 为每个敌人的增量覆盖，合并后再校验一致性。
+ * 弹反数值校验。`overrides` 为每个敌人的增量覆盖，合并后再校验一致性。
  * 返回合并后的数值，方便调用方继续判断（这里只用于校验，不做业务）。
  */
 function checkParryTuning(
@@ -160,7 +160,7 @@ function checkParrySection(
   enemyIds: string[],
 ): void {
   if (!parry) {
-    errors.push('parry.json: 缺少弹反配置（PARRY-01）');
+    errors.push('parry.json: 缺少弹反配置');
     return;
   }
 
@@ -216,13 +216,13 @@ function checkParrySection(
           errors.push(`parry.json/weapons.enabledWeaponIds: 武器不存在 "${weaponId}"`);
           continue;
         }
-        // 首版只允许近战武器弹反（手枪 / 法杖 / 元素武器一律不许，见 PARRY-003 / PARRY-006）
+    // 首版只允许近战武器弹反（手枪 / 法杖 / 元素武器一律不许，见 PARRY-003 / PARRY-006）
         if (weapon.category !== 'melee') {
           errors.push(
             `parry.json/weapons.enabledWeaponIds: "${weaponId}" 是 ${weapon.category} 武器，弹反只允许近战武器`,
           );
         }
-        // 进化形态继承：近战武器的进化目标也应留在白名单，否则「进化后反而不能弹反」
+    // 进化形态继承：近战武器的进化目标也应留在白名单，否则「进化后反而不能弹反」
         if (weapon.evolvesTo) {
           const target = weaponById.get(weapon.evolvesTo);
           if (target && target.category === 'melee' && !enabled.has(target.id)) {
@@ -254,7 +254,7 @@ function checkParrySection(
       errors.push(`${path}.attack: 首版只支持 "charge"（其余攻击形态见 PARRY-005），当前 "${String(rule.attack)}"`);
     }
     checkParryTuning(errors, path, rule, false);
-    // 覆盖后仍然要满足「窗口 < 总时长」
+  // 覆盖后仍然要满足「窗口 < 总时长」
     const total = rule.windupTotalMs ?? global.windupTotalMs;
     const window = rule.parryWindowMs ?? global.parryWindowMs;
     if (isFiniteNumber(total) && isFiniteNumber(window) && !(window < total)) {
@@ -270,7 +270,7 @@ function checkParrySection(
 }
 
 /**
- * 新手教程校验（TUTORIAL-01）：步骤顺序 / 文案 / 超时 / 敌人 / 卡片 / 奖励 / 降级参数。
+ * 新手教程校验()：步骤顺序 / 文案 / 超时 / 敌人 / 卡片 / 奖励 / 降级参数。
  * 所有数值都来自 `tutorial.json`，这里只判断合法性与交叉引用。
  */
 function checkTutorialSection(
@@ -419,7 +419,7 @@ function checkTutorialSection(
 }
 
 /**
- * 主界面指引 + 关卡曲线校验（R2/R4/R5）
+ * 主界面指引 + 关卡曲线校验
  */
 function checkStageAndGuideSections(
   errors: string[],
@@ -626,7 +626,7 @@ export function validateData(bundle: DataBundle): ValidationResult {
       if (phase.attacks.includes('radial') && !phase.radial) {
         warnings.push(`${ppath}: 使用了 radial 但未配置 radial 参数`);
       }
-      // COMBAT-01：Boss 追踪弹（预警/数量/速度/寿命都要有界）
+   //：Boss 追踪弹（预警/数量/速度/寿命都要有界）
       const attacks = phase.attacks as readonly string[];
       if (attacks.includes('homing')) {
         const homing = phase.homing;
@@ -653,10 +653,10 @@ export function validateData(bundle: DataBundle): ValidationResult {
     });
   }
 
-  // PARRY-01：弹反配置（独立文件，规则与 enemies/weapons 交叉校验）
+ //：弹反配置（独立文件，规则与 enemies/weapons 交叉校验）
   checkParrySection(errors, warnings, bundle.parry, new Map(weapons.map((weapon) => [weapon.id, weapon])), enemyIds);
 
-  // TUTORIAL-01：教程配置（独立文件）
+ //：教程配置（独立文件）
   checkTutorialSection(
     errors,
     warnings,
@@ -666,7 +666,7 @@ export function validateData(bundle: DataBundle): ValidationResult {
     new Set((bundle.rooms?.layouts ?? []).map((layout) => layout.id)),
   );
 
-  // R2/R4/R5：主界面指引 + 关卡曲线
+ // // 主界面指引 + 关卡曲线
   checkStageAndGuideSections(errors, warnings, bundle.guide, bundle.stages);
 
   const player = bundle.player;
@@ -702,7 +702,7 @@ export function validateData(bundle: DataBundle): ValidationResult {
     const users = rooms.filter((room) => room.layoutId === layout.id);
     const usage = {
       total: users.length,
-      // 「无刷怪房」= 没有任何波次的房间（shop / treasure / boss）
+   // 「无刷怪房」= 没有任何波次的房间（shop / treasure / boss）
       allSpawnless: users.length > 0 && users.every((room) => (room.waves ?? []).length === 0),
     };
     checkLayout(errors, warnings, infos, layout, usage);
@@ -714,7 +714,7 @@ export function validateData(bundle: DataBundle): ValidationResult {
       errors.push(`${path}: layoutId 指向不存在的布局 "${room.layoutId}"`);
     }
     if (!Array.isArray(room.waves)) errors.push(`${path}: waves 必须是数组（可为空）`);
-    // COMBAT-01：Boss 房小怪节奏（可选字段）
+  //：Boss 房小怪节奏（可选字段）
     if (room.bossRoom) {
       const bp = `${path}/bossRoom`;
       const config = room.bossRoom;

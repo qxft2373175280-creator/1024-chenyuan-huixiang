@@ -1,5 +1,5 @@
 /**
- * 地牢战斗主场景（P4-S2 / P4-S5）。
+ * 地牢战斗主场景。
  *
  * 只做编排：装服务 → 建房间 → 刷波次 → 清房 → 三选一 → 下一房 → Boss → 结算。
  * 战斗、武器、卡牌的实现分别属于 P2 / P3，这里只通过服务与事件握手。
@@ -118,7 +118,7 @@ export class GameScene extends Phaser.Scene {
   private near: Interactable | null = null;
   private waveTimer: Phaser.Time.TimerEvent | null = null;
   private advanceTimer: Phaser.Time.TimerEvent | null = null;
-  /* COMBAT-01：Boss 房小怪导演（独立间隔 + 同屏/总量上限） */
+ /*：Boss 房小怪导演（独立间隔 + 同屏/总量上限） */
   private bossMinionConfig: RoomDef['bossRoom'] | null = null;
   private bossMinionTimer: Phaser.Time.TimerEvent | null = null;
   private bossMinionInitialTimer: Phaser.Time.TimerEvent | null = null;
@@ -129,7 +129,7 @@ export class GameScene extends Phaser.Scene {
   private debug: DebugOptions = { roomIndex: 0, god: false, cardsAll: false, endless: false };
   private hintShown = false;
   private runStartedAt = 0;
-  /** R4/R5：本局关卡上下文（难度倍率 / 奖励倍率 / 是否历史回放） */
+ /** / 本局关卡上下文（难度倍率 / 奖励倍率 / 是否历史回放） */
   private stageState: StageRunState = {
     stage: 1,
     replay: false,
@@ -157,7 +157,7 @@ export class GameScene extends Phaser.Scene {
     this.debug = this.readDebugOptions();
     this.runStartedAt = this.time.now;
 
-    // R4/R5：关卡与回放上下文（失败/中途退出都不改主线）
+  // / 关卡与回放上下文（失败/中途退出都不改主线）
     const save = tryGetService(this, 'save');
     const progress = readProgress(save?.get() ?? null);
     const requestedStage = Number.isFinite(data?.stage) ? Math.floor(Number(data.stage)) : progress.currentStage;
@@ -167,7 +167,7 @@ export class GameScene extends Phaser.Scene {
     this.bindEvents();
     this.bindKeys();
     this.cameras.main.setBackgroundColor('#0b0d17');
-    // 战斗 BGM：进地牢就切到地牢曲（原来只有主菜单有 BGM，战斗全程静音 —— BUG-007）
+  // 战斗 BGM：进地牢就切到地牢曲（原来只有主菜单有 BGM，战斗全程静音 —— 007）
     tryGetService(this, 'audio')?.playBgm('bgm_dungeon');
 
     this.enterRoom(this.debug.roomIndex);
@@ -177,7 +177,7 @@ export class GameScene extends Phaser.Scene {
       (window as unknown as { __stage?: () => Record<string, unknown> }).__stage = () => this.debugStage();
       (window as unknown as { __stageFinish?: (win?: boolean) => void }).__stageFinish = (win?: boolean) =>
         this.debugFinishStage(win !== false);
-      // COMBAT-01：战斗体验验收钩子（只读快照 + 少量确定性操作）
+   //：战斗体验调试钩子（只读快照 + 少量确定性操作）
       (window as unknown as { __combat?: Record<string, unknown> }).__combat = {
         snapshot: () => this.debugCombat(),
         swing: (aimRad?: number) => this.debugSwing(aimRad),
@@ -199,7 +199,7 @@ export class GameScene extends Phaser.Scene {
     this.applyGodMode();
   }
 
-  /* ============================ 房间生命周期 ============================ */
+ /* ============================ 房间生命周期 ============================ */
 
   private enterRoom(index: number): void {
     this.teardownRoom();
@@ -214,7 +214,7 @@ export class GameScene extends Phaser.Scene {
     const room = getRoomDef(node.roomId);
     this.room = room;
     this.built = this.roomSystem.build(getLayout(room.layoutId), room.type);
-    // COMBAT-01：把墙体登记给视线/追踪弹使用（换房时清掉，避免引用已销毁的 group）
+  //：把墙体登记给视线/追踪弹使用（换房时清掉，避免引用已销毁的 group）
     registerRoomWalls(this, this.built.walls);
 
     this.spawnInteractables(room);
@@ -241,7 +241,7 @@ export class GameScene extends Phaser.Scene {
     else if (room.type === 'shop' || room.type === 'treasure') this.setupQuietRoom();
     else this.onRoomCleared();
 
-    // 第一间房给一次操作提示（每局一次，不打扰老玩家）
+  // 第一间房给一次操作提示（每局一次，不打扰老玩家）
     if (!this.hintShown && index === 0) {
       this.hintShown = true;
       this.time.delayedCall(900, () => {
@@ -287,14 +287,14 @@ export class GameScene extends Phaser.Scene {
     this.playerCreated = true;
 
     const weapon = getService(this, 'weapon');
-    // R2/R3：用存档里的出战配置（主手武器 + 预装卡牌）
+  // / 用存档里的出战配置（主手武器 + 预装卡牌）
     this.applyLoadout(player, weapon);
     weapon.recompute(player.getWeapon('primary'));
     weapon.recompute(player.getWeapon('secondary'));
     this.applyDebugCards();
   }
 
-  /** 把存档 loadout 应用到这一局：换主手 + 预装卡牌（非法配置静默回落到默认） */
+ /** 把存档 loadout 应用到这一局：换主手 + 预装卡牌（非法配置静默回落到默认） */
   private applyLoadout(player: IPlayerService, weapon: IWeaponService): void {
     const save = tryGetService(this, 'save');
     if (!save) return;
@@ -327,11 +327,11 @@ export class GameScene extends Phaser.Scene {
     if (sprite) this.colliders.push(this.physics.add.collider(sprite, walls));
     const enemyGroup = this.enemyExtras().getGroup?.() ?? null;
     if (enemyGroup) this.colliders.push(this.physics.add.collider(enemyGroup, walls));
-    // COMBAT-01：Boss 追踪弹撞墙回收（只影响 blockOnWalls 的弹道）
+  //：Boss 追踪弹撞墙回收（只影响 blockOnWalls 的弹道）
     this.combatExtras().bindProjectileWalls?.(walls);
   }
 
-  /* ============================ 刷怪与清房 ============================ */
+ /* ============================ 刷怪与清房 ============================ */
 
   private startWave(index: number): void {
     const room = this.room;
@@ -362,7 +362,7 @@ export class GameScene extends Phaser.Scene {
     getService(this, 'enemy').spawn(defId, point.x, point.y);
   }
 
-  /** 按布局的 S 点轮转取一个带抖动的出生点（波次刷怪与 Boss 房小怪共用） */
+ /** 按布局的 S 点轮转取一个带抖动的出生点（波次刷怪与 Boss 房小怪共用） */
   private nextSpawnPoint(): { x: number; y: number } | null {
     const points = this.built?.spawnPoints ?? [];
     if (points.length === 0) return null;
@@ -386,12 +386,12 @@ export class GameScene extends Phaser.Scene {
     log.p4.info('Boss 出场', { id });
   }
 
-  /* ============================ COMBAT-01：Boss 房小怪导演 ============================ */
+ /* ============================：Boss 房小怪导演 ============================ */
 
-  /**
-   * 小怪节奏完全由 rooms.json 的 bossRoom 段控制：
-   * 独立生成间隔 + 同屏上限 + 总量上限，且生成统一走 EnemyService.spawnMinion（两条路径共用限流状态）。
-   */
+ /**
+  * 小怪节奏完全由 rooms.json 的 bossRoom 段控制：
+  * 独立生成间隔 + 同屏上限 + 总量上限，且生成统一走 EnemyService.spawnMinion（两条路径共用限流状态）。
+  */
   private startBossMinions(room: RoomDef): void {
     const config = room.bossRoom;
     this.stopBossMinions();
@@ -486,7 +486,7 @@ export class GameScene extends Phaser.Scene {
     this.scheduleAdvance();
   }
 
-  /* ============================ 奖励 / 宝箱 / 商店 ============================ */
+ /* ============================ 奖励 / 宝箱 / 商店 ============================ */
 
   private openRewards(offers: RewardOffer[], source: 'room' | 'chest' | 'shop'): void {
     if (this.phase === 'ended') return;
@@ -537,7 +537,7 @@ export class GameScene extends Phaser.Scene {
       this.tweens.add({ targets: this.shopSprite, scale: { from: 1, to: 1.06 }, duration: 900, yoyo: true, repeat: -1 });
     }
 
-    // 无波次的房间（商店 / 宝箱房）不自动推进：给一个出口，玩家按 E 才走
+  // 无波次的房间（商店 / 宝箱房）不自动推进：给一个出口，玩家按 E 才走
     if (room.type === 'shop' || room.type === 'treasure') {
       const door = this.built?.doorPoints[0];
       const start = this.built?.playerStart ?? { x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2 };
@@ -554,7 +554,7 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** 商店这类「没有波次」的房间：不触发清房奖励，等玩家自己按 E 走 */
+ /** 商店这类「没有波次」的房间：不触发清房奖励，等玩家自己按 E 走 */
   private setupQuietRoom(): void {
     bus.emit('ui:toast', { text: '商店：按 E 购买，走到门口按 E 离开', color: css(9) });
   }
@@ -650,11 +650,11 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
-  /* ============================ Boss / 结束 ============================ */
+ /* ============================ Boss / 结束 ============================ */
 
   private onEnemyDied(payload: { enemyId: string; exp: number; gold: number; material: number }): void {
     this.run.registerKill(payload.enemyId, getEnemyDef(payload.enemyId));
-    // R5：历史回放奖励按 stages.json 的倍率打折
+  // 历史回放奖励按 stages.json 的倍率打折
     const rewardMul = this.stageState.rewardMul;
     this.run.addGold(Math.round(payload.gold * rewardMul));
     this.run.addMaterials(Math.round(payload.material * rewardMul));
@@ -668,7 +668,7 @@ export class GameScene extends Phaser.Scene {
   private onBossDefeated(): void {
     if (this.phase === 'ended') return;
     this.phase = 'ended';
-    // R4/R5：先记录通关进度（主线推进 / 回放只累计次数），再进结算
+  // / 先记录通关进度（主线推进 / 回放只累计次数），再进结算
     recordStageClear(this, this.stageState);
     tryGetService(this, 'audio')?.play('sfx_win');
     this.cameras.main.flash(240, 242, 245, 250);
@@ -705,7 +705,7 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  /* ============================ 暂停 ============================ */
+ /* ============================ 暂停 ============================ */
 
   private togglePause(): void {
     if (this.phase === 'paused') {
@@ -746,7 +746,7 @@ export class GameScene extends Phaser.Scene {
     const resume = button(this, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 6, 300, 52, '继续（Esc）', PALETTE[12], () => this.resumeFromPause());
     const quit = button(this, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 74, 300, 52, '放弃本局', PALETTE[4], () => {
       this.resumeFromPause();
-      // R5 修复：历史回放里放弃 = 直接回主界面，不算失败、不进结算
+   // 修复：历史回放里放弃 = 直接回主界面，不算失败、不进结算
       if (this.stageState.replay) {
         bus.emit('ui:toast', { text: getStagesConfig().ui.replayAbandoned, color: css(4) });
         this.scene.start(SCENE_KEYS.MENU);
@@ -758,7 +758,7 @@ export class GameScene extends Phaser.Scene {
     this.pauseOverlay = overlay;
   }
 
-  /* ============================ 输入与事件 ============================ */
+ /* ============================ 输入与事件 ============================ */
 
   private bindKeys(): void {
     const keyboard = this.input.keyboard;
@@ -777,27 +777,27 @@ export class GameScene extends Phaser.Scene {
     bus.on('weapon:evolved', this.onWeaponEvolved, this);
   }
 
-  /** 切武器给一条轻提示（HUD 已有高亮，这里补一个「换到手的是什么」） */
+ /** 切武器给一条轻提示（HUD 已有高亮，这里补一个「换到手的是什么」） */
   private onWeaponChanged = (payload: { slot: string; defId: string }): void => {
     if (this.phase !== 'fighting' && this.phase !== 'intro') return;
-    // 开局自动装备也会触发一次，别和新手提示挤在一起
+  // 开局自动装备也会触发一次，别和新手提示挤在一起
     if (this.time.now - this.runStartedAt < 1200) return;
     let name = payload.defId;
     try {
       name = getWeaponDef(payload.defId).name;
     } catch {
-      /* 用 id 兜底 */
+   /* 用 id 兜底 */
     }
     bus.emit('ui:toast', { text: `切换：${name}`, color: css(5) });
   };
 
-  /** 进化演出：闪白 + 扩散光环 + 提示（M5 的「进化仪式感」） */
+ /** 进化演出：闪白 + 扩散光环 + 提示（M5 的「进化仪式感」） */
   private onWeaponEvolved = (payload: { slot: string; from: string; to: string }): void => {
     let name = payload.to;
     try {
       name = getWeaponDef(payload.to).name;
     } catch {
-      /* 用 id 兜底 */
+   /* 用 id 兜底 */
     }
     bus.emit('ui:toast', { text: `进化：${name}`, color: css(13) });
     this.cameras.main.flash(260, 242, 245, 250);
@@ -861,7 +861,7 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
-  /* ============================ 工具 ============================ */
+ /* ============================ 工具 ============================ */
 
   private playerExtras(): PlayerExtras {
     return getService(this, 'player') as unknown as PlayerExtras;
@@ -886,19 +886,19 @@ export class GameScene extends Phaser.Scene {
     this.hud?.destroy();
     this.time.removeAllEvents();
     this.tweens.killAll();
-    // SHUTDOWN 阶段 physics 子系统可能已先被销毁（切换 Result 时必现），全部做空值兜底
+  // SHUTDOWN 阶段 physics 子系统可能已先被销毁（切换 Result 时必现），全部做空值兜底
     const world = this.physics?.world;
     if (world) world.timeScale = 1;
     clearRunScopedServices(this);
     log.p4.info('GameScene 清理完成');
   }
 
-  /** 供调试面板/测试读取 */
+ /** 供调试面板/测试读取 */
   currentPhase(): Phase {
     return this.phase;
   }
 
-  /** DEV 验收钩子：读关卡上下文 */
+ /** DEV 调试钩子：读关卡上下文 */
   debugStage(): Record<string, unknown> {
     return {
       stage: this.stageState.stage,
@@ -930,18 +930,18 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
-  /**
-   * DEV 验收钩子：直接走「击败 Boss / 玩家阵亡」的真实结算路径。
-   * 只用于 headless 自动化跳过 6 个房间的战斗，正式流程不会调用。
-   */
+ /**
+  * DEV 调试钩子：直接走「击败 Boss / 玩家阵亡」的真实结算路径。
+  * 只用于 headless 自动化跳过 6 个房间的战斗，正式流程不会调用。
+  */
   debugFinishStage(win = true): void {
     if (win) this.onBossDefeated();
     else this.onPlayerDied();
   }
 
-  /* ============================ COMBAT-01 验收钩子 ============================ */
+ /* ============================ 调试钩子 ============================ */
 
-  /** 战斗体验快照：近战判定 / 飘字 / 扇形 / 卡墙 / 视线 / Boss 小怪 / 追踪弹 */
+ /** 战斗体验快照：近战判定 / 飘字 / 扇形 / 卡墙 / 视线 / Boss 小怪 / 追踪弹 */
   debugCombat(): Record<string, unknown> {
     const player = tryGetService(this, 'player');
     const playerExtras = player as unknown as PlayerExtras | null;
@@ -984,7 +984,7 @@ export class GameScene extends Phaser.Scene {
     };
   }
 
-  /** 设瞄准角 + 立刻挥一刀（走真实 tryAttack / CombatSystem 管线） */
+ /** 设瞄准角 + 立刻挥一刀（走真实 tryAttack / CombatSystem 管线） */
   debugSwing(aimRad?: number): Record<string, unknown> {
     const player = tryGetService(this, 'player') as unknown as PlayerExtras | null;
     if (typeof aimRad === 'number' && Number.isFinite(aimRad)) player?.debugSetAim?.(aimRad);
@@ -992,31 +992,31 @@ export class GameScene extends Phaser.Scene {
     return { fired, melee: this.combatExtras().lastMelee?.() ?? null };
   }
 
-  /** 在指定坐标刷怪（验收用；会经过 EnemyService 的池与伤害注册） */
+ /** 在指定坐标刷怪（调试用；会经过 EnemyService 的池与伤害注册） */
   debugSpawnEnemy(defId: string, x: number, y: number): string {
     return this.enemyExtras().spawnMinion?.(defId, x, y) ?? getService(this, 'enemy').spawn(defId, x, y);
   }
 
-  /** 清掉当前房间所有敌人（验证「重复进房无残留」） */
+ /** 清掉当前房间所有敌人（验证「重复进房无残留」） */
   debugClearEnemies(): void {
     getService(this, 'enemy').clearAll();
   }
 
-  /** 传送玩家（验收用；走真实的 setPosition，同时清速度） */
+ /** 传送玩家（调试用；走真实的 setPosition，同时清速度） */
   debugTeleportPlayer(x: number, y: number): void {
     this.playerExtras().setPosition?.(x, y);
   }
 
-  /** 强制 Boss 起一次追踪弹（验证预警 → 追踪 → 清理链路） */
+ /** 强制 Boss 起一次追踪弹（验证预警 → 追踪 → 清理链路） */
   debugBossHoming(): boolean {
     const boss = this.enemyExtras() as unknown as { getBoss?: () => { debugStartHoming?: () => boolean } | null };
     return boss.getBoss?.()?.debugStartHoming?.() ?? false;
   }
 
-  /**
-   * 在指定位置发一发追踪弹（撞墙回收专项验收用）。
-   * 参数全部取自 enemies.json 的第一阶段 homing 配置，不在代码里写数值。
-   */
+ /**
+  * 在指定位置发一发追踪弹（撞墙回收专项调试用）。
+  * 参数全部取自 enemies.json 的第一阶段 homing 配置，不在代码里写数值。
+  */
   debugSpawnHomingProjectile(fromX: number, fromY: number, aimRad: number): boolean {
     const homing = getEnemyDef('boss_warden').phases?.[0]?.homing;
     const combat = this.combatExtras();

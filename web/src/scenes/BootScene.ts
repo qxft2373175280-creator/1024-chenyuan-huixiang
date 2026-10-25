@@ -1,6 +1,6 @@
 /**
  * 启动场景：加载 manifest → 生成占位贴图 → 数据自检 → 进入主菜单
- * 负责人：P1
+ * 
  */
 import Phaser from 'phaser';
 import { DEPTH, GAME_HEIGHT, GAME_WIDTH } from '../core/constants';
@@ -57,7 +57,7 @@ export class BootScene extends Phaser.Scene {
       log.p1.warn(`资源加载失败：${file.key}（将回落到程序化占位图）`);
     });
 
-    // 只有 manifest 是硬依赖；美术资源全部可缺省
+  // 只有 manifest 是硬依赖；美术资源全部可缺省
     this.load.json('asset-manifest', 'assets/manifest.json');
   }
 
@@ -89,7 +89,7 @@ export class BootScene extends Phaser.Scene {
     this.load.start();
   }
 
-  /** 生成占位贴图 + 数据自检 + 进入菜单 */
+ /** 生成占位贴图 + 数据自检 + 进入菜单 */
   private finish(): void {
     this.setProgress(0.82);
     this.statusText?.setText('校验数值表…');
@@ -116,11 +116,11 @@ export class BootScene extends Phaser.Scene {
     this.time.delayedCall(240, () => this.scene.start(this.resolveStartScene()));
   }
 
-  /**
-   * 调试入口（都在 URL 上，写进 README / 菜单提示）：
-   *  - `?scene=forge|game|reward|result|sandbox` 直接进对应界面
-   *  - `?debug=room=3` / `?debug=god` / `?debug=sandbox` / `?debug=cards=all` 直接进战斗（参数由 GameScene 读取）
-   */
+ /**
+  * 调试入口（都在 URL 上，写进 README / 菜单提示）：
+  * - `?scene=forge|game|reward|result|sandbox` 直接进对应界面
+  * - `?debug=room=3` / `?debug=god` / `?debug=sandbox` / `?debug=cards=all` 直接进战斗（参数由 GameScene 读取）
+  */
   private resolveStartScene(): string {
     const debug = getUrlParam('debug') ?? '';
     const debugEntersGame =

@@ -1,11 +1,11 @@
 /**
- * 关卡循环与难度（R4/R5）
+ * 关卡循环与难度
  *
  * 数值全部来自 `data/stages.json`：
- *   生命 = 1 + hpPerStage×(关-1) + 挑战加成
- *   伤害 = 1 + damagePerStage×(关-1) + 挑战加成
- *   数量 = 1 + countPer2Stage×floor((关-1)/2)（有上限）
- *   速度 = 1 + speedPer3Stage×floor((关-1)/3)
+ *  生命 = 1 + hpPerStage×(关-1) + 挑战加成
+ *  伤害 = 1 + damagePerStage×(关-1) + 挑战加成
+ *  数量 = 1 + countPer2Stage×floor((关-1)/2)（有上限）
+ *  速度 = 1 + speedPer3Stage×floor((关-1)/3)
  * 第 1~maxStage 关为正式关卡，之后进入挑战模式（额外加成）。
  *
  * 运行态放 `game.registry`（与契约无关的调试/共享状态），ResultScene 可跨场景读取。
@@ -26,7 +26,7 @@ export interface StageScaling {
   speed: number;
 }
 
-/** 按关卡号算难度倍率（纯函数，便于验收脚本对照 JSON 公式） */
+/** 按关卡号算难度倍率（纯函数，便于测试脚本对照 JSON 公式） */
 export function computeStageScaling(stage: number): StageScaling {
   const cfg = getStagesConfig().scaling;
   const safeStage = Math.max(1, Math.floor(stage));
@@ -116,7 +116,7 @@ export function recordStageClear(scene: Phaser.Scene, state: StageRunState): voi
   progress.clears[String(state.stage)] = (progress.clears[String(state.stage)] ?? 0) + 1;
 
   if (isChallengeStage(state.stage)) {
-    // 挑战模式：不动主线 currentStage，只累计层数 + 给材料奖励
+  // 挑战模式：不动主线 currentStage，只累计层数 + 给材料奖励
     const level = state.stage - cfg.maxStage;
     progress.challengeLevel = Math.max(progress.challengeLevel, level);
     data.progress = progress;

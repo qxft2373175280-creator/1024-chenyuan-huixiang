@@ -1,5 +1,5 @@
 /**
- * 弹道（P2）：玩家 / 敌人共用一套池，支持穿透、寿命、命中特效（《方案文档》§6.2 P2-07）。
+ * 弹道（P2）：玩家 / 敌人共用一套池，支持穿透、寿命、命中特效（《设计文档》§6.2 P2-07）。
  *
  * 契约消费方：CombatSystem.spawnPlayerProjectile / spawnEnemyProjectile / radialEnemyShot。
  * 命中判定走 Arcade overlap，命中后由 CombatSystem 统一结算（这里不做任何扣血）。
@@ -36,13 +36,13 @@ export class Projectile extends Phaser.Physics.Arcade.Image {
   radiusPx = 0;
   hasTrail = false;
   lastTrailAt = 0;
-  /** COMBAT-01：追踪到期时刻（0 / 已过 = 直线飞行） */
+ /**：追踪到期时刻（0 / 已过 = 直线飞行） */
   homingUntil = 0;
-  /** 最大转向速率（弧度/秒） */
+ /** 最大转向速率（弧度/秒） */
   turnRateRadPerSec = 0;
-  /** 撞墙是否回收（只对 Boss 追踪弹开启，环形弹幕等保持原样） */
+ /** 撞墙是否回收（只对 Boss 追踪弹开启，环形弹幕等保持原样） */
   blockOnWalls = false;
-  /** 已命中的目标 id（防止穿透弹对同一目标重复结算）；复用数组，避免每发 new */
+ /** 已命中的目标 id（防止穿透弹对同一目标重复结算）；复用数组，避免每发 new */
   readonly hitIds: string[] = [];
 
   constructor(scene: Phaser.Scene, x = 0, y = 0, texture: string = TEX_KEYS.PROJ_PLAYER) {
@@ -98,7 +98,7 @@ export class ProjectileSystem {
       },
       (projectile) => {
         projectile.setActive(false).setVisible(false).setPosition(-1000, -1000);
-        // 场景销毁后 body2 可能已失效（SHUTDOWN → destroy 清理时），一律兜底
+    // 场景销毁后 body2 可能已失效（SHUTDOWN → destroy 清理时），一律兜底
         const body = projectile.body2;
         if (body) {
           body.stop();
@@ -110,13 +110,13 @@ export class ProjectileSystem {
     );
   }
 
-  /**
-   * 绑定瞄准对象：玩家弹道打敌人组，敌人弹道打玩家。
-   *
-   * `resolvePlayer` 必须返回注册进 CombatSystem 的 IDamageable（玩家的 `damageable` 适配器），
-   * 不能直接把 Arcade Sprite 当 IDamageable —— Sprite 上没有 `isAlive/applyDamage`，
-   * 敌人弹道命中玩家时会抛 `target.isAlive is not a function`（P2 遗留 bug，验收时修复）。
-   */
+ /**
+  * 绑定瞄准对象：玩家弹道打敌人组，敌人弹道打玩家。
+  *
+  * `resolvePlayer` 必须返回注册进 CombatSystem 的 IDamageable（玩家的 `damageable` 适配器），
+  * 不能直接把 Arcade Sprite 当 IDamageable —— Sprite 上没有 `isAlive/applyDamage`，
+  * 敌人弹道命中玩家时会抛 `target.isAlive is not a function`（P2 遗留 bug，调试时修复）。
+  */
   attach(
     player: Phaser.GameObjects.GameObject,
     enemies: Phaser.Physics.Arcade.Group,
@@ -134,7 +134,7 @@ export class ProjectileSystem {
     this.colliderPlayer = this.scene.physics.add.overlap(this.group, player, (a, b) => {
       const projectile = (a instanceof Projectile ? a : b) as Projectile;
       if (projectile.faction !== 'enemy' || !projectile.active) return;
-      // 优先用注册过的 IDamageable；拿不到就跳过（宁可漏一次判定，也不抛异常打断整帧）
+   // 优先用注册过的 IDamageable；拿不到就跳过（宁可漏一次判定，也不抛异常打断整帧）
       const target = resolvePlayer?.() ?? null;
       if (!target) return;
       this.sink.onEnemyProjectileHit(projectile, target);
@@ -149,10 +149,10 @@ export class ProjectileSystem {
     this.spawn(cfg, 'enemy', TEX_KEYS.PROJ_ENEMY, false);
   }
 
-  /**
-   * COMBAT-01：Boss 追踪弹。
-   * 有限追踪（homingMs 后转直线）+ 撞墙回收（blockOnWalls），其他弹道不受影响。
-   */
+ /**
+  *：Boss 追踪弹。
+  * 有限追踪（homingMs 后转直线）+ 撞墙回收（blockOnWalls），其他弹道不受影响。
+  */
   spawnHomingEnemyProjectile(cfg: EnemyProjectileCfg & HomingProjectileCfg & { blockOnWalls?: boolean }): void {
     this.spawn(cfg, 'enemy', TEX_KEYS.PROJ_ENEMY, false, {
       homingMs: cfg.homingMs,
@@ -161,10 +161,10 @@ export class ProjectileSystem {
     });
   }
 
-  /**
-   * 绑定当前房间墙体（换房 / 退出时传 null 解绑）。
-   * 只对 blockOnWalls 的弹道生效：环形弹幕等既有弹道保持「不被墙挡」的原行为，避免回归。
-   */
+ /**
+  * 绑定当前房间墙体（换房 / 退出时传 null 解绑）。
+  * 只对 blockOnWalls 的弹道生效：环形弹幕等既有弹道保持「不被墙挡」的原行为，避免回归。
+  */
   setWalls(walls: Phaser.Physics.Arcade.StaticGroup | null): void {
     if (this.colliderWalls) {
       this.scene.physics.world.removeCollider(this.colliderWalls);
@@ -178,7 +178,7 @@ export class ProjectileSystem {
     });
   }
 
-  /** 每帧：追踪转向 + 寿命到期回收 + 元素弹拖尾 */
+ /** 每帧：追踪转向 + 寿命到期回收 + 元素弹拖尾 */
   update(nowMs: number): void {
     const dtMs = this.lastUpdateAt > 0 ? Math.max(1, nowMs - this.lastUpdateAt) : 16;
     this.lastUpdateAt = nowMs;
@@ -201,7 +201,7 @@ export class ProjectileSystem {
     }
   }
 
-  /** 追踪转向：只改方向不改速度（速度上限就是出膛速度），到期后由 physics 继续走直线 */
+ /** 追踪转向：只改方向不改速度（速度上限就是出膛速度），到期后由 physics 继续走直线 */
   private steerHoming(projectile: Projectile, nowMs: number, dtMs: number): void {
     if (projectile.homingUntil <= 0 || nowMs >= projectile.homingUntil) return;
     const target = this.resolvePlayer?.() ?? null;
@@ -217,7 +217,7 @@ export class ProjectileSystem {
     projectile.setRotation(next);
   }
 
-  /** 命中一次；返回是否还有剩余穿透次数 */
+ /** 命中一次；返回是否还有剩余穿透次数 */
   consumeHit(projectile: Projectile, targetId: string): boolean {
     if (projectile.hitIds.includes(targetId)) return projectile.remainingHits > 0;
     projectile.hitIds.push(targetId);
@@ -238,10 +238,10 @@ export class ProjectileSystem {
     this.active.length = 0;
   }
 
-  /**
-   * 调试 / 教程用：当前在飞的敌人弹道快照（只读，调用方不要修改）。
-   * 教程第 3 步用它判断「冲刺瞬间弹道是否已经逼近」。
-   */
+ /**
+  * 调试 / 教程用：当前在飞的敌人弹道快照（只读，调用方不要修改）。
+  * 教程第 3 步用它判断「冲刺瞬间弹道是否已经逼近」。
+  */
   activeEnemyProjectiles(): readonly Projectile[] {
     const list: Projectile[] = [];
     for (const projectile of this.active) {
@@ -250,7 +250,7 @@ export class ProjectileSystem {
     return list;
   }
 
-  /** 当前在飞的追踪弹数量（验收脚本用） */
+ /** 当前在飞的追踪弹数量（测试脚本用） */
   activeHomingCount(): number {
     let count = 0;
     for (const projectile of this.active) {
@@ -259,7 +259,7 @@ export class ProjectileSystem {
     return count;
   }
 
-  /** COMBAT-01：弹道快照（验收脚本判断追踪/撞墙/清理） */
+ /**：弹道快照（测试脚本判断追踪/撞墙/清理） */
   debugList(): Array<{
     x: number;
     y: number;
@@ -282,7 +282,7 @@ export class ProjectileSystem {
       }));
   }
 
-  /** 当前在飞的敌人弹道数量（验收脚本用；验证「重开后没有残留弹道」） */
+ /** 当前在飞的敌人弹道数量（测试脚本用；验证「重开后没有残留弹道」） */
   activeEnemyCount(): number {
     let count = 0;
     for (const projectile of this.active) {
@@ -293,8 +293,8 @@ export class ProjectileSystem {
 
   destroy(): void {
     this.clear();
-    // 场景 SHUTDOWN 时 physics.world 可能已被销毁（GameScene → Result 切换时必现），
-    // 这里一律做空值兜底，避免清理阶段抛异常把 shutdown 链路打断（P3 验收发现的 BUG-003）。
+  // 场景 SHUTDOWN 时 physics.world 可能已被销毁（GameScene → Result 切换时必现），
+  // 这里一律做空值兜底，避免清理阶段抛异常把 shutdown 链路打断（P3 调试发现的 003）。
     const world = this.scene?.physics?.world;
     if (world) {
       if (this.colliderEnemies) world.removeCollider(this.colliderEnemies);
@@ -311,7 +311,7 @@ export class ProjectileSystem {
     try {
       this.group?.destroy(true);
     } catch {
-      // 场景已在销毁流程里，group 可能已失效：忽略
+   // 场景已在销毁流程里，group 可能已失效：忽略
     }
   }
 

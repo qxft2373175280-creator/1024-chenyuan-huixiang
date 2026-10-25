@@ -1,8 +1,8 @@
 /**
- * 结算（P4-S5）：胜负、用时、击杀、房间、材料结算 → 写入存档 → 下一局/回菜单。
+ * 结算：胜负、用时、击杀、房间、材料结算 → 写入存档 → 下一局/回菜单。
  *
- * 材料公式见《方案文档》§9.5：
- *   floor(kills / economy.materialPerKillDivisor) + 本局获得材料 + (win ? 通关奖励 : 失败安慰)
+ * 材料公式见《设计文档》§9.5：
+ *  floor(kills / economy.materialPerKillDivisor) + 本局获得材料 + (win ? 通关奖励 : 失败安慰)
  */
 
 import Phaser from 'phaser';
@@ -38,7 +38,7 @@ export class ResultScene extends Phaser.Scene {
       cards: [],
     };
 
-    // R4/R5：关卡上下文（失败/中途退出都不会推进主线）
+  // / 关卡上下文（失败/中途退出都不会推进主线）
     const stageState = getStageRun(this);
     const stage = stageState?.stage ?? 1;
     const replay = stageState?.replay === true;
@@ -51,8 +51,8 @@ export class ResultScene extends Phaser.Scene {
       Math.floor(snapshot.kills / Math.max(1, economy.materialPerKillDivisor)) +
       snapshot.materials +
       (snapshot.win ? economy.materialWinBonus : economy.materialLoseBonus);
-    // 挑战模式：结算不再叠加普通奖励（奖励由 StageService 按 stages.json 的 challenge.rewardMaterials 发放；
-    // 失败也不给“安慰奖”，保证「失败不扣材料、不进主线」的规则干净）
+  // 挑战模式：结算不再叠加普通奖励（奖励由 StageService 按 stages.json 的 challenge.rewardMaterials 发放；
+  // 失败也不给“安慰奖”，保证「失败不扣材料、不进主线」的规则干净）
     const earned = challenge ? 0 : Math.max(0, Math.round(baseEarned * rewardMul));
 
     const save = tryGetService(this, 'save');

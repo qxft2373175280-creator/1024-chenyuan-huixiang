@@ -1,5 +1,5 @@
 /**
- * 历史关卡回放（R5）
+ * 历史关卡回放
  *
  * 只能回放「已经通关过」的关卡；奖励按 stages.json 的 replayRewardMul（0.6）结算，
  * 且不会改变主线 currentStage。中途退出不写任何进度。
@@ -66,7 +66,7 @@ export class StageSelectScene extends Phaser.Scene {
     }
   }
 
-  /** 验收脚本用 */
+ /** 测试脚本用 */
   debugStages(): { cleared: number[]; currentStage: number } {
     const data = getService(this, 'save').get();
     return { cleared: clearedStages(data), currentStage: readProgress(data).currentStage };

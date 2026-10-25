@@ -1,10 +1,10 @@
 /**
  * 存档系统 —— localStorage，只有局外数据
- * 负责人：P1
+ * 
  *
  * 设计要求：
- *  - 任何字段缺失 / 损坏都能自愈（回落到默认值），绝不因为存档问题让游戏启动失败
- *  - 写盘失败（隐私模式 / 配额）只告警，不影响本局
+ * - 任何字段缺失 / 损坏都能自愈（回落到默认值），绝不因为存档问题让游戏启动失败
+ * - 写盘失败（隐私模式 / 配额）只告警，不影响本局
  */
 import type { ISaveService, RunSnapshot, SaveData } from '../core/contracts';
 import { DATA_FALLBACK } from '../core/constants';
@@ -31,7 +31,7 @@ export function createDefaultSave(slotIndex = 0): SaveData {
   try {
     primary = getPlayerDef().startWeapons[0] ?? 'iron_sword';
   } catch {
-    /* 数据未就绪时用占位武器 id，正式流程不会走到 */
+  /* 数据未就绪时用占位武器 id，正式流程不会走到 */
   }
   const now = Date.now();
   return {
@@ -40,9 +40,9 @@ export function createDefaultSave(slotIndex = 0): SaveData {
     stats: { runs: 0, wins: 0, bestRoom: 0, kills: 0, bestTimeMs: 0 },
     seen: { weapons: [], cards: [], enemies: [] },
     settings: { muted: false },
-    // TUTORIAL-01：教程进度放在存档里（不写死在全局单例），为后续多存档预留
+  //：教程进度放在存档里（不写死在全局单例），为后续多存档预留
     tutorial: { completed: false, completedAt: 0, skipped: false, lastStep: 0 },
-    // R2/R3：槽位与进度字段
+  // / 槽位与进度字段
     slot: slotIndex,
     createdAt: now,
     lastPlayedAt: now,
@@ -126,7 +126,7 @@ export function sanitizeSave(raw: unknown): SaveData {
 
 export class SaveSystem implements ISaveService {
   private data: SaveData;
-  /** 当前落盘的 key：选中槽位后是 aaa1024.save.slotN；未选槽位时用旧 key（调试/兼容） */
+ /** 当前落盘的 key：选中槽位后是 aaa1024.save.slotN；未选槽位时用旧 key（调试/兼容） */
   private storageKey: string;
 
   constructor() {
@@ -140,13 +140,13 @@ export class SaveSystem implements ISaveService {
     });
   }
 
-  /** 当前槽位（未选择 = null） */
+ /** 当前槽位（未选择 = null） */
   currentSlot(): number | null {
     const slot = this.data.slot;
     return typeof slot === 'number' && this.storageKey !== SAVE_KEY_LEGACY ? slot : null;
   }
 
-  /** 切换到某个槽位（读盘）。不存在则创建一个空存档并落盘。 */
+ /** 切换到某个槽位（读盘）。不存在则创建一个空存档并落盘。 */
   adoptSlot(slotIndex: number): SaveData {
     const key = slotStorageKey(slotIndex);
     let data: SaveData;
@@ -163,14 +163,14 @@ export class SaveSystem implements ISaveService {
     try {
       window.localStorage.setItem(ACTIVE_SLOT_KEY, String(slotIndex));
     } catch {
-      /* 隐私模式：忽略 */
+   /* 隐私模式：忽略 */
     }
     this.commit();
     log.p1.info('已切换到存档槽', { slotIndex });
     return this.data;
   }
 
-  /** 切回「未选槽位」的内存存档（调试入口用） */
+ /** 切回「未选槽位」的内存存档（调试入口用） */
   useMemoryProfile(): void {
     this.storageKey = SAVE_KEY_LEGACY;
     this.data = createDefaultSave(0);
@@ -296,7 +296,7 @@ export function readActiveSlot(): number | null {  try {
 
 /**
  * 取 SaveSystem 实现（带槽位能力），而不是契约里的 ISaveService。
- * 槽位/切换槽位属于 R3 的增量能力，不进冻结的契约。
+ * 槽位/切换槽位属于 的增量能力，不进冻结的契约。
  */
 export function getSaveSystem(scene: import('phaser').Scene): SaveSystem | null {
   const svc = tryGetService(scene, 'save');

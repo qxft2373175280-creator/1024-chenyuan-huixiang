@@ -1,6 +1,6 @@
 /**
  * 全局技术常量 —— 只放「与玩法数值无关」的东西
- * 负责人：P1。玩法数值一律进 src/data/*.json。
+ * 玩法数值一律进 src/data/*.json。
  */
 
 export const GAME_WIDTH = 1280;
@@ -22,17 +22,17 @@ export const DAMAGE_TICK_MS = 500;
 
 /* ===== 以下技术常量由 P2 战斗组引入（不含平衡数值，平衡数值一律进 JSON） ===== */
 
-/** 对象池容量（《方案文档》§6.3.5 / §2.7 性能预算） */
+/** 对象池容量（《设计文档》§6.3.5 / §2.7 性能预算） */
 export const POOL_SIZE = {
   PROJECTILE: 120,
   DAMAGE_TEXT: 24,
   HIT_FX: 40,
   ENEMY: 40,
-  /** 近战扇形轨迹（COMBAT-01）：同屏最多 6 个就够看，不需要更多 */
+ /** 近战扇形轨迹()：同屏最多 6 个就够看，不需要更多 */
   MELEE_ARC: 6,
 } as const;
 
-/* ===== COMBAT-01 近战可读性 / 卡墙脱困（技术常量，平衡数值一律进 JSON） ===== */
+/* ===== 近战可读性 / 卡墙脱困（技术常量，平衡数值一律进 JSON） ===== */
 
 /** 近战扇形轨迹淡出时长（ms） */
 export const MELEE_ARC_FADE_MS = 170;
@@ -79,7 +79,7 @@ export const SHAKE_MAX_MS = 400;
 export const DEBUG_PARAM = 'debug';
 
 
-/** 操作键位（唯一来源，见《方案文档.md》§9.7） */
+/** 操作键位（唯一来源，见《设计文档》§9.7） */
 export const KEYS = {
   UP: 'W',
   DOWN: 'S',
@@ -134,59 +134,59 @@ export const COLOR = {
  * 严禁在业务代码里写裸数字兜底（`def.attack?.damage ?? 12` 这种写法一律改成引用本表）。
  *
  * 约定：
- *  - 每组常量与对应 JSON 字段一一对应，改平衡请改 JSON，不是改这里；
- *  - 本表的值只用于「数据缺字段时不崩」，等于 JSON 全量填写后永远不会生效的那份；
- *  - 新增可选字段时，先在这里登记兜底值，再写 `?? DATA_FALLBACK.xxx`。
+ * - 每组常量与对应 JSON 字段一一对应，改平衡请改 JSON，不是改这里；
+ * - 本表的值只用于「数据缺字段时不崩」，等于 JSON 全量填写后永远不会生效的那份；
+ * - 新增可选字段时，先在这里登记兜底值，再写 `?? DATA_FALLBACK.xxx`。
  */
 export const DATA_FALLBACK = {
-  /** 乘区缺省：等价于「不加成」（速度/攻速/伤害倍率） */
+ /** 乘区缺省：等价于「不加成」（速度/攻速/伤害倍率） */
   NO_MULTIPLIER: 1,
-  /** 加法缺省：等价于「没有额外叠加」 */
+ /** 加法缺省：等价于「没有额外叠加」 */
   NO_BONUS: 0,
-  /** 武器初始等级（WeaponInstance.level 缺省级） */
+ /** 武器初始等级（WeaponInstance.level 缺省级） */
   WEAPON_LEVEL_DEFAULT: 1,
 
-  /* ---------- enemies.json ---------- */
-  /** attack.projectileSpeed（远程敌人弹速，px/s） */
+ /* ---------- enemies.json ---------- */
+ /** attack.projectileSpeed（远程敌人弹速，px/s） */
   ENEMY_PROJECTILE_SPEED: 200,
-  /** attack.cooldownMs（Boss 出招间隔，ms） */
+ /** attack.cooldownMs（Boss 出招间隔，ms） */
   ENEMY_ATTACK_COOLDOWN_MS: 1800,
-  /** attack.windupMs（冲锋前摇，ms） */
+ /** attack.windupMs（冲锋前摇，ms） */
   ENEMY_CHARGE_WINDUP_MS: 500,
-  /** attack.windupMs（砸地前摇，ms） */
+ /** attack.windupMs（砸地前摇，ms） */
   ENEMY_SLAM_WINDUP_MS: 600,
-  /** attack.aoeRadiusPx（砸地/范围伤害半径，px） */
+ /** attack.aoeRadiusPx（砸地/范围伤害半径，px） */
   ENEMY_ATTACK_AOE_RADIUS_PX: 90,
-  /** attack.damage（敌人单次攻击伤害） */
+ /** attack.damage（敌人单次攻击伤害） */
   ENEMY_ATTACK_DAMAGE: 12,
-  /** 砸地击退冲量（px/s） */
+ /** 砸地击退冲量（px/s） */
   ENEMY_SLAM_KNOCKBACK: 140,
-  /** Boss 环形弹幕：发数 / 弹速 / 单发伤害（phases.radial 缺省时） */
+ /** Boss 环形弹幕：发数 / 弹速 / 单发伤害（phases.radial 缺省时） */
   BOSS_RADIAL_COUNT: 10,
   BOSS_RADIAL_SPEED: 170,
   BOSS_RADIAL_DAMAGE: 10,
 
-  /* ---------- weapons.json ---------- */
-  /** arcDeg（近战扇形角度，度） */
+ /* ---------- weapons.json ---------- */
+ /** arcDeg（近战扇形角度，度） */
   WEAPON_ARC_DEG: 90,
-  /** projectile.count（单次发射弹丸数） */
+ /** projectile.count（单次发射弹丸数） */
   WEAPON_PROJECTILE_COUNT: 1,
-  /** projectile.pierce（穿透数） */
+ /** projectile.pierce（穿透数） */
   WEAPON_PROJECTILE_PIERCE: 0,
-  /** projectile.spreadDeg（相邻弹道夹角，度） */
+ /** projectile.spreadDeg（相邻弹道夹角，度） */
   WEAPON_PROJECTILE_SPREAD_DEG: 0,
-  /** 近战击退（px/s） */
+ /** 近战击退（px/s） */
   WEAPON_KNOCKBACK: 0,
 
-  /* ---------- 伤害管线（DamageSpec 可选字段） ---------- */
-  /** critChance（暴击率 0..1） */
+ /* ---------- 伤害管线（DamageSpec 可选字段） ---------- */
+ /** critChance（暴击率 0..1） */
   DAMAGE_CRIT_CHANCE: 0,
-  /** critMult（暴击倍率） */
+ /** critMult（暴击倍率） */
   DAMAGE_CRIT_MULT: 1.5,
-  /** executeMult（处决倍率） */
+ /** executeMult（处决倍率） */
   DAMAGE_EXECUTE_MULT: 2,
 
-  /* ---------- 表现兜底 ---------- */
-  /** 元素色索引缺省：落在 16 色板的 TEXT 色（5） */
+ /* ---------- 表现兜底 ---------- */
+ /** 元素色索引缺省：落在 16 色板的 TEXT 色（5） */
   ELEMENT_COLOR_FALLBACK_INDEX: 5,
 } as const;

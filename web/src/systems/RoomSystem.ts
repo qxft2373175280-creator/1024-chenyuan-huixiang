@@ -1,7 +1,7 @@
 /**
- * 房间解析与渲染（P4-S1）：布局 → 地板/墙体/静态碰撞/出生点/宝箱/商店/Boss 点位。
+ * 房间解析与渲染：布局 → 地板/墙体/静态碰撞/出生点/宝箱/商店/Boss 点位。
  *
- * 符号语义见《方案文档》§8.3.1。
+ * 符号语义见《设计文档》§8.3.1。
  */
 
 import Phaser from 'phaser';
@@ -18,7 +18,7 @@ export interface BuiltRoom {
   shopPoint: Vec2 | null;
   bossPoint: Vec2 | null;
   doorPoints: Vec2[];
-  /** 所有需要销毁的显示对象（地板/装饰），墙体随 walls 组销毁 */
+ /** 所有需要销毁的显示对象（地板/装饰），墙体随 walls 组销毁 */
   decorations: Phaser.GameObjects.GameObject[];
 }
 
@@ -91,7 +91,7 @@ export class RoomSystem {
     }
 
     if (built.spawnPoints.length === 0) {
-      // 兜底：没有 S 的布局就在四角附近找空位，避免刷怪直接失败
+   // 兜底：没有 S 的布局就在四角附近找空位，避免刷怪直接失败
       built.spawnPoints.push(
         tileCenter(4, 4),
         tileCenter(layout.width - 5, 4),
@@ -108,13 +108,13 @@ export class RoomSystem {
     if (!built) return;
     for (const decoration of built.decorations) decoration.destroy();
     built.decorations.length = 0;
-    // 场景 SHUTDOWN 阶段物理世界可能已先销毁：group.clear() 会去读 children.size 而抛错
-    // （BUG-003 家族，restart/切结算时必现），这里统一兜底。
+  // 场景 SHUTDOWN 阶段物理世界可能已先销毁：group.clear() 会去读 children.size 而抛错
+  // （003 家族，restart/切结算时必现），这里统一兜底。
     try {
       built.walls.clear(true, true);
       built.walls.destroy(true);
     } catch {
-      // group 已随场景销毁，忽略
+   // group 已随场景销毁，忽略
     }
     built.spawnPoints.length = 0;
     built.chestPoints.length = 0;

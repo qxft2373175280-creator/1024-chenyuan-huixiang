@@ -48,7 +48,7 @@ export class UpgradeSystem implements IUpgradeService {
       levelUp = true;
     }
 
-    // 满 Lv3 后经验只累计到进化所需值，HUD 进度条不会超过 100%
+  // 满 Lv3 后经验只累计到进化所需值，HUD 进度条不会超过 100%
     if (level >= MAX_LEVEL) exp = Math.min(exp, def.expToEvolve);
 
     inst.level = level;
@@ -57,7 +57,7 @@ export class UpgradeSystem implements IUpgradeService {
     if (levelUp) {
       this.weapon.recompute(inst);
       getService(this.scene, 'audio').play('sfx_levelup');
-      // COMBAT-01：升级广播（HUD 显示等级变化 + 本次升级效果）
+   //：升级广播（HUD 显示等级变化 + 本次升级效果）
       const scaling = getLevelScaling();
       const damageMul = scaling.damageMul[level - 1] ?? DATA_FALLBACK.NO_MULTIPLIER;
       const attackSpeedMul = scaling.attackSpeedMul[level - 1] ?? DATA_FALLBACK.NO_MULTIPLIER;
@@ -108,7 +108,7 @@ export class UpgradeSystem implements IUpgradeService {
     inst.evolved = true;
     inst.level = MAX_LEVEL;
     inst.exp = 0;
-    // 换形态后不继承旧形态的连击段，避免进化完第一刀直接算第 3 段
+  // 换形态后不继承旧形态的连击段，避免进化完第一刀直接算第 3 段
     inst.comboIndex = 0;
     inst.comboExpireAt = 0;
     this.weapon.recompute(inst);

@@ -1,8 +1,8 @@
 /**
  * 玩家（P2）：8 方向归一化移动、冲刺（无敌帧 + 残影）、受击无敌、主副武器切换、
- * 攻击输入转发给 P3 的 IWeaponService。
+ * 攻击输入转发给 IWeaponService。
  *
- * 边界：本文件不实现武器行为（P3 的 WeaponSystem），也不做 UI（P4）。
+ * 边界：本文件不实现武器行为（WeaponSystem），也不做 UI（P4）。
  */
 
 import Phaser from 'phaser';
@@ -26,7 +26,7 @@ import { clamp } from '../core/util';
 import type { FxSystem } from '../vfx/Fx';
 import type { CombatSystem } from '../systems/CombatSystem';
 
-/** HUD 需要的事件节流间隔（《方案文档》§10.5：player:stats ≥150ms；这里靠「变化才发」） */
+/** HUD 需要的事件节流间隔（《设计文档》§10.5：player:stats ≥150ms；这里靠「变化才发」） */
 const DASH_READY_EPSILON_MS = 1;
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
@@ -53,14 +53,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private lastEmittedHp = -1;
   private dashReportedReady = true;
   private trailAccumulator = 0;
-  /** 复用坐标对象：避免每帧 new（§2.7 单帧 0 新对象） */
+ /** 复用坐标对象：避免每帧 new（§2.7 单帧 0 新对象） */
   private readonly scratch: Vec2 = { x: 0, y: 0 };
   private readonly centerScratch: Vec2 = { x: 0, y: 0 };
-  /**
-   * 提供给战斗系统的 IDamageable 视图。
-   * 不能直接让 Sprite 实现 IDamageable：Phaser 的 Sprite 自带 getCenter(output?, includeParent?)，
-   * 与契约签名冲突，所以用一个小适配器隔离（见 docs/changes/P2-S4）。
-   */
+ /**
+  * 提供给战斗系统的 IDamageable 视图。
+  * 不能直接让 Sprite 实现 IDamageable：Phaser 的 Sprite 自带 getCenter(output?, includeParent?)，
+  * 与契约签名冲突，所以用一个小适配器隔离。
+  */
   readonly damageable: IDamageable;
 
   constructor(scene: Phaser.Scene, x: number, y: number, def: PlayerDef, fx: FxSystem, bonusMaxHp: number) {
@@ -105,7 +105,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     log.p2.info('玩家已创建', { x, y, maxHp: this.maxHpValue });
   }
 
-  /* ============================ 每帧 ============================ */
+ /* ============================ 每帧 ============================ */
 
   override update(dtMs: number, nowMs: number): void {
     if (!this.alive) return;
@@ -127,7 +127,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.startDash(inputX, inputY, inputLength, nowMs);
     }
 
-    // 击退衰减（指数衰减，避免手感上的「滑冰」）
+  // 击退衰减（指数衰减，避免手感上的「滑冰」）
     const decay = Math.exp(-dtMs / KNOCKBACK_DECAY_MS);
     this.knockbackX *= decay;
     this.knockbackY *= decay;
@@ -157,7 +157,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.updateBlink(nowMs);
     this.updateDashReadyEvent(nowMs);
 
-    // 攻击输入：左键按住持续攻击（冷却由 P3 的 tryAttack 判断）
+  // 攻击输入：左键按住持续攻击（冷却由 tryAttack 判断）
     const pointer = this.scene.input.activePointer;
     if (pointer && pointer.leftButtonDown()) {
       this.tryAttack(nowMs);
@@ -166,19 +166,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.emitHpIfChanged();
   }
 
-  /** 供外部（Boss/陷阱）查询当前瞄准方向 */
+ /** 供外部（Boss/陷阱）查询当前瞄准方向 */
   getAimRad(): number {
     return this.aimRad;
   }
 
-  /* ============================ 验收/调试钩子（COMBAT-01） ============================ */
+ /* ============================ 调试钩子() ============================ */
 
-  /** 直接设定瞄准角（headless 验收用；正常操作仍然走鼠标） */
+ /** 直接设定瞄准角（headless 调试用；正常操作仍然走鼠标） */
   debugSetAim(rad: number): void {
     this.aimRad = rad;
   }
 
-  /** 立刻挥一刀：清冷却后走与鼠标点击完全相同的 tryAttack 路径 */
+ /** 立刻挥一刀：清冷却后走与鼠标点击完全相同的 tryAttack 路径 */
   debugSwing(): boolean {
     if (!this.alive) return false;
     const weaponService = getService(this.scene, 'weapon');
@@ -189,7 +189,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return weaponService.tryAttack(weapon, this.scratch, this.aimRad, this.scene.time.now);
   }
 
-  /* ============================ 攻击 / 武器 ============================ */
+ /* ============================ 攻击 / 武器 ============================ */
 
   private tryAttack(nowMs: number): void {
     const weaponService = getService(this.scene, 'weapon');
@@ -202,7 +202,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   equip(slot: WeaponSlot, defId: string): WeaponInstance {
     const instance = getService(this.scene, 'weapon').create(defId);
     this.weapons[slot] = instance;
-    // 图鉴：装备过的武器记一次「已见过」（BUG-004：原来全项目没人调用 markSeen）
+  // 图鉴：装备过的武器记一次「已见过」（004：原来全项目没人调用 markSeen）
     tryGetService(this.scene, 'save')?.markSeen('weapon', defId);
     bus.emit('weapon:changed', { slot, defId });
     return instance;
@@ -220,7 +220,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return this.activeSlot;
   }
 
-  /* ============================ 生命 ============================ */
+ /* ============================ 生命 ============================ */
 
   isAlive(): boolean {
     return this.alive;
@@ -266,10 +266,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     upgrade.addExp(this.getWeapon('secondary'), Math.floor(amount * 0.5));
   }
 
-  /**
-   * 受击入口：由 CombatSystem 统一调用（契约 IDamageable）。
-   * 注意：暴击 / 处决 / 状态都已在管线里算好，这里只做「扣血 + 受击表现 + 无敌帧」。
-   */
+ /**
+  * 受击入口：由 CombatSystem 统一调用（契约 IDamageable）。
+  * 注意：暴击 / 处决 / 状态都已在管线里算好，这里只做「扣血 + 受击表现 + 无敌帧」。
+  */
   applyDamage(spec: DamageSpec, sourcePos: Vec2): number {
     if (!this.alive) return 0;
     const now = this.scene.time.now;
@@ -305,7 +305,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     super.destroy(fromScene);
   }
 
-  /* ============================ 内部 ============================ */
+ /* ============================ 内部 ============================ */
 
   private updateAim(): void {
     const pointer = this.scene.input.activePointer;
@@ -440,7 +440,7 @@ export class PlayerService {
     combat.attachPlayerSprite(player);
     player.equip('primary', def.startWeapons[0] ?? '');
     if (def.startWeapons[1]) player.equip('secondary', def.startWeapons[1]);
-    // 初始对准右侧，避免鼠标未移动时 aimRad = 0 之外的不确定值
+  // 初始对准右侧，避免鼠标未移动时 aimRad = 0 之外的不确定值
     this.positionCache.x = x;
     this.positionCache.y = y;
   }
@@ -453,10 +453,10 @@ export class PlayerService {
     return this.positionCache;
   }
 
-  /**
-   * 换房间时把玩家挪到新出生点（P4 增量 API，不在契约里）。
-   * 同时清速度与击退，避免带着上一房的速度穿墙。
-   */
+ /**
+  * 换房间时把玩家挪到新出生点（P4 增量 API，不在契约里）。
+  * 同时清速度与击退，避免带着上一房的速度穿墙。
+  */
   setPosition(x: number, y: number): void {
     const player = this.playerInstance;
     if (!player) return;
@@ -497,7 +497,7 @@ export class PlayerService {
     return this.playerInstance?.getActiveSlot() ?? 'primary';
   }
 
-  /** COMBAT-01 验收钩子：设定瞄准角后直接挥一刀（与真实点击同一路径） */
+ /** 调试钩子：设定瞄准角后直接挥一刀（与真实点击同一路径） */
   debugSetAim(rad: number): void {
     this.playerInstance?.debugSetAim(rad);
   }
@@ -518,7 +518,7 @@ export class PlayerService {
     return this.playerInstance?.isAlive() ?? false;
   }
 
-  /** 供 P2 内部（敌人 AI / 弹道）直接拿 Sprite 用 */
+ /** 供 P2 内部（敌人 AI / 弹道）直接拿 Sprite 用 */
   getSprite(): Player | null {
     return this.playerInstance;
   }
