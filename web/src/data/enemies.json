@@ -1,0 +1,148 @@
+{
+  "enemies": [
+    {
+      "id": "enemy_slime",
+      "name": "史莱姆",
+      "ai": "chaser",
+      "textureKey": "spr_enemy_slime",
+      "maxHp": 30,
+      "speed": 60,
+      "radiusPx": 12,
+      "contactDamage": 6,
+      "contactCooldownMs": 800,
+      "exp": 4,
+      "gold": 3,
+      "materialChance": 0.08,
+      "knockbackResist": 0
+    },
+    {
+      "id": "enemy_spitter",
+      "name": "喷吐者",
+      "ai": "shooter",
+      "textureKey": "spr_enemy_spitter",
+      "maxHp": 26,
+      "speed": 45,
+      "radiusPx": 12,
+      "contactDamage": 4,
+      "contactCooldownMs": 900,
+      "attack": {
+        "damage": 5,
+        "cooldownMs": 1600,
+        "rangePx": 192,
+        "windupMs": 300,
+        "projectileSpeed": 260
+      },
+      "exp": 6,
+      "gold": 5,
+      "materialChance": 0.1,
+      "knockbackResist": 0.1
+    },
+    {
+      "id": "enemy_charger",
+      "name": "冲锋兽",
+      "ai": "charger",
+      "textureKey": "spr_enemy_charger",
+      "maxHp": 48,
+      "speed": 65,
+      "radiusPx": 14,
+      "contactDamage": 8,
+      "contactCooldownMs": 900,
+      "attack": {
+        "damage": 10,
+        "cooldownMs": 2400,
+        "rangePx": 250,
+        "windupMs": 450
+      },
+      "exp": 8,
+      "gold": 6,
+      "materialChance": 0.12,
+      "knockbackResist": 0.3
+    },
+    {
+      "id": "enemy_brute",
+      "name": "重装守卫",
+      "ai": "chaser",
+      "textureKey": "spr_enemy_brute",
+      "maxHp": 200,
+      "speed": 42,
+      "radiusPx": 18,
+      "contactDamage": 10,
+      "contactCooldownMs": 700,
+      "attack": {
+        "damage": 14,
+        "cooldownMs": 2200,
+        "rangePx": 72,
+        "windupMs": 600,
+        "aoeRadiusPx": 72
+      },
+      "exp": 30,
+      "gold": 25,
+      "materialChance": 0.5,
+      "knockbackResist": 0.6,
+      "elite": true
+    },
+    {
+      "id": "boss_warden",
+      "name": "守卫长",
+      "ai": "boss",
+      "textureKey": "spr_boss_warden",
+      "maxHp": 900,
+      "speed": 55,
+      "radiusPx": 24,
+      "contactDamage": 16,
+      "contactCooldownMs": 800,
+      "attack": {
+        "damage": 18,
+        "cooldownMs": 1800,
+        "rangePx": 90,
+        "windupMs": 700,
+        "aoeRadiusPx": 90
+      },
+      "exp": 120,
+      "gold": 100,
+      "materialChance": 1.0,
+      "knockbackResist": 0.9,
+      "isBoss": true,
+      "phases": [
+        {
+          "atHpRatio": 1.0,
+          "attacks": ["charge", "radial", "homing"],
+          "radial": { "count": 10, "speed": 170, "damage": 7 },
+          "homing": {
+            "windupMs": 800,
+            "count": 2,
+            "speed": 170,
+            "lifeMs": 3600,
+            "homingMs": 1200,
+            "turnRateDegPerSec": 110,
+            "damage": 7,
+            "spreadDeg": 18,
+            "spawnOffsetPx": 28,
+            "radiusPx": 7
+          }
+        },
+        {
+          "atHpRatio": 0.5,
+          "speedMul": 1.25,
+          "damageMul": 1.15,
+          "attackSpeedMul": 1.2,
+          "attacks": ["charge", "radial", "slam", "homing"],
+          "radial": { "count": 16, "speed": 200, "damage": 8 },
+          "homing": {
+            "windupMs": 700,
+            "count": 3,
+            "speed": 190,
+            "lifeMs": 3400,
+            "homingMs": 1400,
+            "turnRateDegPerSec": 140,
+            "damage": 9,
+            "spreadDeg": 14,
+            "spawnOffsetPx": 28,
+            "radiusPx": 7
+          },
+          "announce": "守卫长被激怒了！"
+        }
+      ]
+    }
+  ]
+}

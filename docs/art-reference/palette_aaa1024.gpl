@@ -1,0 +1,20 @@
+GIMP Palette
+Name: aaa1024 16
+Columns: 4
+#
+ 11  13  23	bg
+ 29  34  51	dark
+ 46  59  82	wall
+ 74  90 116	seam
+111 125 149	stone
+199 208 221	text
+242 245 250	white
+217  79  79	red
+242 143  59	orange
+242 211  59	yellow
+ 95 217 123	green
+ 59 214 198	cyan
+ 63 127 242	blue
+138  92 242	purple
+224  95 168	pink
+122  74  46	brown

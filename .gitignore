@@ -1,0 +1,86 @@
+# ============ Unity Generated ============
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+[Rr]ecordings/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.svd.ide
+*.vsconfig
+
+# Unity3D generated meta files
+# 注意：.meta 文件默认应提交（Unity 依赖它们管理 GUID）。
+# 只有确定不需要提交时才取消下一行注释。
+#[Aa]ssets/**/*.meta
+
+# Unity3D generated file on crash reports
+sysinfo.txt
+
+# Builds
+*.apk
+*.aab
+*.unitypackage
+*.app
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Crashlytics generated file
+crashlytics-build.properties
+
+# ============ IDE ============
+.idea/
+.vs/
+.vscode/
+*.swp
+*.swo
+*~
+.rhproj
+
+# ============ OS ============
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+$RECYCLE.BIN/
+
+# ============ 本地工具 / 临时文件 ============
+*.log
+*.tmp
+node_modules/
+
+# ============ Web（Phaser 工程） ============
+web/dist/
+web/dist-itch.zip
+web/.vite/
+web/.npm-cache/
+web/.tmp/
+web/coverage/
+
+# 本地环境文件（不要提交）
+.env
+.env.local
+
+# 本机工作区辅助目录（WorkBuddy 记忆等，勿提交）
+.workbuddy/
+
+# ============ 归档（只留本地，不进仓库） ============
+# 三份分组工作副本 + 旧 Unity 脚手架，见 docs/acceptance/2026-10-24-P1P2P4-验收报告.md
+archive/

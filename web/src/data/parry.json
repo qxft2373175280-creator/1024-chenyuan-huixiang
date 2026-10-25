@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "global": {
+    "windupTotalMs": 1500,
+    "parryWindowMs": 120,
+    "perfectWindowMs": 60,
+    "successStunMs": 800,
+    "failReleaseDelayMs": 200,
+    "ringStartRadiusMul": 1.5,
+    "ringEndRadiusMul": 1.0,
+    "colors": {
+      "charge": "#4aa3ff",
+      "warn": "#ffd24a",
+      "window": "#ff4a4a",
+      "flash": "#ffffff"
+    }
+  },
+  "weapons": {
+    "meleeSwingTag": "melee_swing",
+    "enabledWeaponIds": ["iron_sword", "flame_sword"]
+  },
+  "enemies": {
+    "enemy_charger": { "attack": "charge" }
+  }
+}

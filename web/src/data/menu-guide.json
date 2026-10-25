@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "loadout": {
+    "lockedReason": "未解锁：先去锻造台用材料解锁",
+    "lockedHint": "灰掉的卡还没解锁，先在锻造台解锁，或在关卡里三选一拿到"
+  },
+  "steps": [
+    {
+      "id": "guide_start",
+      "target": "start",
+      "title": "开始游戏",
+      "text": "继续你当前进度的关卡：清完房间、击败 Boss 就进入下一关。"
+    },
+    {
+      "id": "guide_stages",
+      "target": "stages",
+      "title": "历史关卡",
+      "text": "重玩已经通关的关卡，按 0.6 倍奖励刷材料，不影响主线进度。"
+    },
+    {
+      "id": "guide_loadout",
+      "target": "loadout",
+      "title": "装备 / 卡牌",
+      "text": "出发前更换主手武器、预装卡牌，改变这一局的起始构筑。"
+    },
+    {
+      "id": "guide_forge",
+      "target": "forge",
+      "title": "锻造台",
+      "text": "用材料解锁新武器、卡牌和被动，局外成长都在这里。"
+    },
+    {
+      "id": "guide_slots",
+      "target": "slots",
+      "title": "存档管理",
+      "text": "三个存档槽互相独立；可以导出备份、导入恢复，坏档会被拒绝。"
+    }
+  ]
+}

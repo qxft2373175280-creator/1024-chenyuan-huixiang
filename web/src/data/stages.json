@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "scaling": {
+    "maxStage": 10,
+    "hpPerStage": 0.18,
+    "damagePerStage": 0.12,
+    "countPer2Stage": 0.08,
+    "speedPer3Stage": 0.04,
+    "challenge": {
+      "hpPerStage": 0.1,
+      "damagePerStage": 0.06,
+      "countPer2Stage": 0.05,
+      "speedPer3Stage": 0.03,
+      "rewardMaterials": 40
+    },
+    "maxCountMultiplier": 1.8,
+    "replayRewardMul": 0.6
+  },
+  "labels": {
+    "campaign": "第 {stage} 关",
+    "replay": "历史关卡 · 第 {stage} 关",
+    "challenge": "挑战模式 第 {stage} 层"
+  },
+  "ui": {
+    "replayAbandoned": "已放弃本次回放",
+    "challengeRewardText": "挑战奖励：材料 +{materials}",
+    "challengeUnlocked": "主线已通关：可以进入挑战模式",
+    "challengeNext": "下一层"
+  }
+}

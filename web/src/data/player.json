@@ -1,0 +1,14 @@
+{
+  "id": "player_ranger",
+  "name": "游侠",
+  "maxHp": 100,
+  "moveSpeed": 190,
+  "dashSpeed": 520,
+  "dashDurationMs": 180,
+  "dashCooldownMs": 1200,
+  "dashIFrameMs": 200,
+  "hurtIFrameMs": 700,
+  "pickupRadius": 48,
+  "startGold": 0,
+  "startWeapons": ["iron_sword", "pistol"]
+}

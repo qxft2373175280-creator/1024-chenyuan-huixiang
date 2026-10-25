@@ -1,0 +1,61 @@
+{
+  "unlocks": [
+    {
+      "id": "unlock_card_plague_burst",
+      "name": "蓝图·疫爆",
+      "kind": "card",
+      "target": "card_plague_burst",
+      "cost": 40,
+      "requires": [],
+      "description": "解锁卡牌「疫爆」，中毒敌人死亡时会爆炸"
+    },
+    {
+      "id": "unlock_card_execute",
+      "name": "蓝图·处决",
+      "kind": "card",
+      "target": "card_execute",
+      "cost": 60,
+      "requires": [],
+      "description": "解锁卡牌「处决」，低血敌人受到双倍伤害"
+    },
+    {
+      "id": "unlock_card_chain",
+      "name": "蓝图·连锁闪电",
+      "kind": "card",
+      "target": "card_chain",
+      "cost": 50,
+      "requires": [],
+      "description": "解锁卡牌「连锁闪电」，命中会跳跃到附近敌人"
+    },
+    {
+      "id": "unlock_passive_vigor",
+      "name": "体质强化",
+      "kind": "passive",
+      "target": "passive_vigor",
+      "cost": 30,
+      "requires": [],
+      "description": "每局初始生命 +10",
+      "effects": { "maxHp": 10 }
+    },
+    {
+      "id": "unlock_passive_edge",
+      "name": "开刃",
+      "kind": "passive",
+      "target": "passive_edge",
+      "cost": 50,
+      "requires": [],
+      "description": "全局伤害 +8%",
+      "effects": { "damagePct": 0.08 }
+    },
+    {
+      "id": "unlock_start_gold",
+      "name": "行囊",
+      "kind": "passive",
+      "target": "passive_gold",
+      "cost": 35,
+      "requires": [],
+      "description": "开局金币 +30",
+      "effects": { "startGold": 30 }
+    }
+  ]
+}

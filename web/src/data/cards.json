@@ -1,0 +1,155 @@
+{
+  "cards": [
+    {
+      "id": "card_poison_edge",
+      "name": "毒刃",
+      "type": "modifier",
+      "rarity": "common",
+      "textureKey": "ui_card_poison_edge",
+      "description": "命中附加中毒，每秒造成 {value} 点伤害，持续 3 秒",
+      "tags": ["poison"],
+      "modifiers": [
+        { "target": "poisonPerHit", "op": "add", "value": 4 },
+        { "target": "poisonDuration", "op": "add", "value": 3000 }
+      ],
+      "weight": 100,
+      "stackable": false
+    },
+    {
+      "id": "card_split_shot",
+      "name": "分裂弹",
+      "type": "modifier",
+      "rarity": "rare",
+      "textureKey": "ui_card_split_shot",
+      "description": "每次攻击额外发射 {value} 发弹丸，单发伤害 -20%",
+      "tags": ["barrage"],
+      "modifiers": [
+        { "target": "projectileCount", "op": "add", "value": 1 },
+        { "target": "damage", "op": "mul", "value": 0.8 }
+      ],
+      "weight": 70,
+      "stackable": false
+    },
+    {
+      "id": "card_barrage",
+      "name": "弹幕狂欢",
+      "type": "modifier",
+      "rarity": "rare",
+      "textureKey": "ui_card_barrage",
+      "description": "攻速 +35%，弹丸 +2，散布增大",
+      "tags": ["barrage"],
+      "modifiers": [
+        { "target": "attackSpeed", "op": "mul", "value": 1.35 },
+        { "target": "projectileCount", "op": "add", "value": 2 },
+        { "target": "spread", "op": "add", "value": 8 }
+      ],
+      "weight": 60,
+      "stackable": false
+    },
+    {
+      "id": "card_crit_aim",
+      "name": "弱点瞄准",
+      "type": "modifier",
+      "rarity": "common",
+      "textureKey": "ui_card_crit_aim",
+      "description": "暴击率 +{value}%",
+      "tags": ["crit"],
+      "modifiers": [{ "target": "critChance", "op": "add", "value": 0.18 }],
+      "weight": 90,
+      "stackable": true
+    },
+    {
+      "id": "card_reach",
+      "name": "长刃",
+      "type": "modifier",
+      "rarity": "common",
+      "textureKey": "ui_card_reach",
+      "description": "攻击范围 +40%，伤害 +3",
+      "tags": ["reach"],
+      "modifiers": [
+        { "target": "range", "op": "mul", "value": 1.4 },
+        { "target": "damage", "op": "add", "value": 3 }
+      ],
+      "weight": 85,
+      "stackable": true
+    },
+    {
+      "id": "card_whirlwind",
+      "name": "旋风斩",
+      "type": "modifier",
+      "rarity": "rare",
+      "textureKey": "ui_card_whirlwind",
+      "description": "攻击变为环绕全身的旋风，段数变 1",
+      "tags": ["spin"],
+      "modifiers": [
+        { "target": "comboHits", "op": "set", "value": 1, "weaponCategories": ["melee"] },
+        { "target": "spinRadius", "op": "add", "value": 96, "weaponCategories": ["melee"] }
+      ],
+      "flags": ["spin"],
+      "weight": 55,
+      "stackable": false
+    },
+    {
+      "id": "card_lifesteal",
+      "name": "嗜血",
+      "type": "modifier",
+      "rarity": "rare",
+      "textureKey": "ui_card_lifesteal",
+      "description": "命中回复 {value}% 造成伤害的生命",
+      "tags": ["sustain"],
+      "modifiers": [{ "target": "lifesteal", "op": "add", "value": 0.08 }],
+      "weight": 55,
+      "stackable": true
+    },
+    {
+      "id": "card_plague_burst",
+      "name": "疫爆",
+      "type": "modifier",
+      "rarity": "epic",
+      "textureKey": "ui_card_plague_burst",
+      "description": "中毒的敌人死亡时爆炸，造成其最大生命 20% 的毒伤",
+      "tags": ["poison"],
+      "modifiers": [{ "target": "explodeRadius", "op": "add", "value": 64 }],
+      "flags": ["plague_burst"],
+      "params": { "percentMaxHp": 0.2 },
+      "weight": 40,
+      "stackable": false,
+      "unlock": "unlock_card_plague_burst"
+    },
+    {
+      "id": "card_execute",
+      "name": "处决",
+      "type": "modifier",
+      "rarity": "epic",
+      "textureKey": "ui_card_execute",
+      "description": "对生命低于 {value}% 的敌人造成 2 倍伤害",
+      "tags": ["crit", "execute"],
+      "modifiers": [
+        { "target": "executeBelow", "op": "set", "value": 0.25 },
+        { "target": "critMult", "op": "add", "value": 0.5 }
+      ],
+      "params": { "executeMult": 2 },
+      "weight": 35,
+      "stackable": false,
+      "unlock": "unlock_card_execute"
+    },
+    {
+      "id": "card_chain",
+      "name": "连锁闪电",
+      "type": "modifier",
+      "rarity": "epic",
+      "textureKey": "ui_card_chain",
+      "description": "命中时向 {value} 个附近敌人跳跃闪电，伤害递减",
+      "tags": ["elemental", "barrage"],
+      "modifiers": [
+        { "target": "chain", "op": "add", "value": 2 },
+        { "target": "damage", "op": "mul", "value": 0.95 }
+      ],
+      "flags": ["chain_lightning"],
+      "params": { "chainRangePx": 96, "chainDamageMul": 0.6 },
+      "weight": 40,
+      "stackable": false,
+      "unlock": "unlock_card_chain"
+    }
+  ]
+}

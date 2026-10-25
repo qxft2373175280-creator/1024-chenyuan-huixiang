@@ -1,0 +1,49 @@
+{
+  "sprites": [
+    {
+      "key": "spr_player_idle",
+      "file": "sprites/spr_player_idle.png"
+    },
+    {
+      "key": "spr_player_run",
+      "file": "sprites/spr_player_run.png"
+    },
+    {
+      "key": "spr_player_dash",
+      "file": "sprites/spr_player_dash.png"
+    },
+    {
+      "key": "spr_player_hurt",
+      "file": "sprites/spr_player_hurt.png"
+    },
+    {
+      "key": "spr_enemy_slime",
+      "file": "sprites/spr_enemy_slime.png"
+    },
+    {
+      "key": "spr_boss_warden",
+      "file": "sprites/spr_boss_warden.png"
+    },
+    {
+      "key": "spr_weapon_iron_sword",
+      "file": "sprites/spr_weapon_iron_sword.png"
+    }
+  ],
+  "tiles": [
+    {
+      "key": "tile_floor_01",
+      "file": "tiles/tile_floor_01.png"
+    },
+    {
+      "key": "tile_wall_01",
+      "file": "tiles/tile_wall_01.png"
+    }
+  ],
+  "ui": [
+    {
+      "key": "ui_card_poison_edge",
+      "file": "ui/ui_card_poison_edge.png"
+    }
+  ],
+  "audio": []
+}

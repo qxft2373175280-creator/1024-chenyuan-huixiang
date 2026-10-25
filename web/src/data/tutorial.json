@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "layoutId": "layout_arena",
+  "reward": { "materials": 20, "firstTimeOnly": true },
+  "ui": {
+    "bannerTitle": "新手教程",
+    "skipLabel": "[跳过教程]",
+    "skipConfirmText": "确定要跳过教程吗？",
+    "skipConfirmYes": "跳过",
+    "skipConfirmNo": "继续",
+    "completeTitle": "教程完成！",
+    "completeSubText": "即将进入第一关...",
+    "cardGainedText": "你获得了：{card}",
+    "statsChangedText": "武器伤害 {before} → {after}",
+    "retryText": "没关系，再试一次",
+    "dashSuccessText": "冲刺成功！",
+    "dashEasedText": "已降低难度：弹道变慢、间隔变长",
+    "parryEasedText": "已降低难度，请注意圆圈完全变红时攻击",
+    "reviveText": "别担心，满血复活，继续练"
+  },
+  "steps": [
+    {
+      "id": "tut_move",
+      "kind": "move",
+      "title": "移动",
+      "stepLabel": "第 1 / 5 步：移动",
+      "hint": "按 WASD 移动",
+      "goal": "走到发光的圆圈里",
+      "idleHint": "用 W A S D 走到箭头指的圆圈",
+      "timeoutMs": 10000,
+      "targetOffset": { "x": 240, "y": -120 },
+      "arriveRadiusPx": 46
+    },
+    {
+      "id": "tut_attack",
+      "kind": "attack",
+      "title": "攻击",
+      "stepLabel": "第 2 / 5 步：攻击",
+      "hint": "鼠标左键攻击",
+      "goal": "击败面前的史莱姆",
+      "idleHint": "把鼠标指向史莱姆，按住左键攻击",
+      "timeoutMs": 15000,
+      "enemies": [{ "enemyId": "enemy_slime", "count": 1, "offset": { "x": 110, "y": -40 } }]
+    },
+    {
+      "id": "tut_dash",
+      "kind": "dash",
+      "title": "冲刺闪避",
+      "stepLabel": "第 3 / 5 步：冲刺",
+      "hint": "按 Space 冲刺闪避",
+      "goal": "在弹道靠近时冲刺，躲开一次攻击",
+      "idleHint": "等弹道飞近（变亮）再按 Space 冲刺",
+      "timeoutMs": 12000,
+      "turret": {
+        "textureKey": "spr_enemy_spitter",
+        "offset": { "x": 300, "y": -140 },
+        "intervalMs": 1700,
+        "projectileSpeed": 240,
+        "projectileLifeMs": 2600,
+        "radiusPx": 5,
+        "damage": 1,
+        "hitsBeforeEase": 3,
+        "easyIntervalMul": 1.8,
+        "easySpeedMul": 0.7
+      },
+      "dodge": { "threatRadiusPx": 150 }
+    },
+    {
+      "id": "tut_cards",
+      "kind": "cards",
+      "title": "卡牌三选一",
+      "stepLabel": "第 4 / 5 步：卡牌",
+      "hint": "击败敌人后选择奖励",
+      "goal": "清理两只史莱姆，然后从三选一里拿一张卡",
+      "idleHint": "先清掉史莱姆，奖励面板会自动弹出",
+      "timeoutMs": 25000,
+      "enemies": [
+        { "enemyId": "enemy_slime", "count": 1, "offset": { "x": 140, "y": -60 } },
+        { "enemyId": "enemy_slime", "count": 1, "offset": { "x": 200, "y": 60 } }
+      ],
+      "rewardCardIds": ["card_reach", "card_whirlwind", "card_crit_aim"]
+    },
+    {
+      "id": "tut_parry",
+      "kind": "parry",
+      "title": "蓄力弹反",
+      "stepLabel": "第 5 / 5 步：弹反",
+      "hint": "当冲锋兽蓄力时，等圆圈完全变红再用铁剑攻击，可触发弹反",
+      "goal": "成功弹反一次",
+      "idleHint": "看准圆圈完全变红的那一瞬再出刀",
+      "timeoutMs": 20000,
+      "enemies": [{ "enemyId": "enemy_charger", "count": 1, "offset": { "x": 180, "y": -30 } }],
+      "parryFallback": { "failsBeforeEase": 4, "windowMs": 200 }
+    }
+  ]
+}
